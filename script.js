@@ -21,10 +21,21 @@ function handleRoute() {
     section.classList.remove('active');
   });
   
+  // Remove active class from all nav links
+  document.querySelectorAll('.nav-links a').forEach(link => {
+    link.classList.remove('active');
+  });
+  
   // Show active section
   const activeSection = document.getElementById(hash);
   if (activeSection) {
     activeSection.classList.add('active');
+    
+    // Add active class to corresponding nav link
+    const activeNavLink = document.querySelector(`.nav-links a[data-nav="${hash}"]`);
+    if (activeNavLink) {
+      activeNavLink.classList.add('active');
+    }
     
     // Load data for section
     if (hash === 'database' && !manifest) loadDatabase();
@@ -104,122 +115,173 @@ function renderContentList(items) {
         <span class="content-id">${item.id}</span>
         <span class="content-type">${item.type}</span>
       </div>
-      <div class="content-description">${item.title || 'No description'}</div>
-      <div class="content-meta">
-        ${item.created_at ? new Date(item.created_at).toLocaleDateString() : 'Unknown date'}
+      <div class="content-description">${i
+
+cat > index.html << 'EOF'
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Iran Dawn</title>
+  <meta name="description" content="Open archive documenting events in Iran">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <nav class="nav">
+    <div class="nav-container">
+      <a href="#home" class="nav-brand">Iran Dawn</a>
+      <div class="nav-links">
+        <a href="#home" data-nav="home">Home</a>
+        <a href="#database" data-nav="database">Database</a>
+        <a href="#events" data-nav="events">Events</a>
+        <a href="#stats" data-nav="stats">Stats</a>
+        <a href="#submit" data-nav="submit">Submit</a>
       </div>
     </div>
-  `).join('');
-}
+  </nav>
 
-function filterContent() {
-  if (!manifest) return;
-  
-  const search = document.getElementById('search-input').value.toLowerCase();
-  const typeFilter = document.getElementById('type-filter').value;
-  const eventFilter = document.getElementById('event-filter').value;
-  
-  let filtered = manifest.items || [];
-  
-  if (typeFilter) {
-    filtered = filtered.filter(item => item.type === typeFilter);
-  }
-  
-  if (eventFilter) {
-    filtered = filtered.filter(item => item.event === eventFilter);
-  }
-  
-  if (search) {
-    filtered = filtered.filter(item => 
-      (item.title || '').toLowerCase().includes(search) ||
-      (item.id || '').toLowerCase().includes(search)
-    );
-  }
-  
-  renderContentList(filtered);
-}
-
-// Load events
-async function loadEvents() {
-  const data = await fetchGitHub('database', 'metadata/events.json');
-  if (!data) {
-    document.getElementById('events-list').innerHTML = '<p>Failed to load events.</p>';
-    return;
-  }
-  
-  events = data;
-  
-  const container = document.getElementById('events-list');
-  container.innerHTML = Object.entries(data).map(([id, event]) => `
-    <div class="event-item">
-      <div class="event-title">${event.name || id}</div>
-      <div class="event-date">
-        ${event.start_date || 'Unknown'} ${event.end_date ? `— ${event.end_date}` : '(ongoing)'}
+  <main class="container">
+    <!-- Home Section -->
+    <section id="home" class="section active">
+      <h1>Iran Dawn</h1>
+      <p class="lead">
+        Open archive documenting events in Iran through community-submitted content.
+        All data is publicly accessible, verifiable, and preserved on GitHub.
+      </p>
+      
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-value" id="total-items">-</div>
+          <div class="stat-label">Total Items</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="total-events">-</div>
+          <div class="stat-label">Events</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="total-submissions">-</div>
+          <div class="stat-label">Submissions</div>
+        </div>
       </div>
-      <div class="event-description">${event.description || 'No description available.'}</div>
+
+      <div class="action-buttons">
+        <a href="#database" class="btn btn-primary">Browse Database</a>
+        <a href="#submit" class="btn btn-secondary">Submit Content</a>
+      </div>
+    </section>
+
+    <!-- Database Section -->
+    <section id="database" class="section">
+      <h1>Database</h1>
+      <p>Browse archived content. All items are stored as structured JSON files.</p>
+      
+      <div class="search-box">
+        <input type="text" id="search-input" placeholder="Search by description, event, or ID...">
+      </div>
+
+      <div class="filter-bar">
+        <select id="type-filter">
+          <option value="">All Types</option>
+          <option value="video">Video</option>
+          <option value="image">Image</option>
+          <option value="text">Text</option>
+        </select>
+        <select id="event-filter">
+          <option value="">All Events</option>
+        </select>
+      </div>
+
+      <div id="content-list" class="content-list">
+        <p class="loading">Loading database...</p>
+      </div>
+    </section>
+
+    <!-- Events Section -->
+    <section id="events" class="section">
+      <h1>Events</h1>
+      <p>Timeline of documented events.</p>
+      
+      <div id="events-list" class="events-list">
+        <p class="loading">Loading events...</p>
+      </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section id="stats" class="section">
+      <h1>Statistics</h1>
+      
+      <div class="stats-section">
+        <h2>Content Distribution</h2>
+        <div id="content-stats" class="stats-table">
+          <p class="loading">Loading statistics...</p>
+        </div>
+      </div>
+
+      <div class="stats-section">
+        <h2>Submission Activity</h2>
+        <div id="submission-stats" class="stats-table">
+          <p class="loading">Loading activity log...</p>
+        </div>
+      </div>
+
+      <div class="stats-section">
+        <h2>Recent Activity</h2>
+        <div id="recent-activity" class="activity-log">
+          <p class="loading">Loading recent activity...</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Submit Section -->
+    <section id="submit" class="section">
+      <h1>Submit Content</h1>
+      <p>Help document events by submitting photos, videos, or reports.</p>
+
+      <div class="submit-guide">
+        <h2>How to Submit</h2>
+        <ol class="submit-steps">
+          <li>Go to the <a href="https://github.com/irandawn/submit/issues/new/choose" target="_blank">submission portal</a></li>
+          <li>Choose a template (Media Report, Event Report, etc.)</li>
+          <li>Fill out the form with accurate information</li>
+          <li>Submit - our bot will validate your submission automatically</li>
+          <li>If valid, a PR will be created and reviewed by maintainers</li>
+        </ol>
+
+        <h2>Guidelines</h2>
+        <ul class="guidelines">
+          <li>Only submit content you have rights to share</li>
+          <li>Remove any personal identifiable information (PII)</li>
+          <li>Provide accurate dates, times, and locations when possible</li>
+          <li>All submissions are licensed under CC-BY-4.0</li>
+        </ul>
+
+        <h2>What Happens Next</h2>
+        <p>
+          Your submission will be automatically validated for required fields and PII.
+          If it passes, a pull request is opened in the database repository.
+          Maintainers review submissions for authenticity and accuracy before merging.
+          All activity is logged in our public audit log.
+        </p>
+
+        <a href="https://github.com/irandawn/submit/issues/new/choose" 
+           class="btn btn-primary" 
+           target="_blank">
+          Submit Content Now
+        </a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <p>
+        Iran Dawn is an open-source project.
+        <a href="https://github.com/irandawn" target="_blank">View on GitHub</a>
+      </p>
     </div>
-  `).join('');
-}
+  </footer>
 
-// Load stats
-async function loadStats() {
-  const manifestData = await fetchGitHub('database', 'content/manifest.json');
-  
-  if (manifestData) {
-    const contentStats = document.getElementById('content-stats');
-    contentStats.innerHTML = Object.entries(manifestData.by_type || {}).map(([type, data]) => `
-      <div class="stats-row">
-        <span>${type}</span>
-        <span>${data.count || 0}</span>
-      </div>
-    `).join('');
-  }
-  
-  // Load recent activity from log
-  const logData = await fetchGitHub('log', `submissions/${getCurrentMonth()}.jsonl`);
-  if (logData) {
-    const lines = logData.split('\n').filter(line => line.trim()).slice(-20).reverse();
-    const activity = document.getElementById('recent-activity');
-    
-    activity.innerHTML = lines.map(line => {
-      try {
-        const event = JSON.parse(line);
-        return `
-          <div class="activity-item">
-            <div>${event.event.replace(/_/g, ' ')}</div>
-            <div class="activity-time">${new Date(event.timestamp).toLocaleString()}</div>
-          </div>
-        `;
-      } catch {
-        return '';
-      }
-    }).join('');
-    
-    const submissionStats = document.getElementById('submission-stats');
-    const eventCounts = {};
-    lines.forEach(line => {
-      try {
-        const event = JSON.parse(line);
-        eventCounts[event.event] = (eventCounts[event.event] || 0) + 1;
-      } catch {}
-    });
-    
-    submissionStats.innerHTML = Object.entries(eventCounts).map(([event, count]) => `
-      <div class="stats-row">
-        <span>${event.replace(/_/g, ' ')}</span>
-        <span>${count}</span>
-      </div>
-    `).join('');
-  }
-}
-
-// Utilities
-function getCurrentMonth() {
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, '0');
-  return `${year}-${month}`;
-}
-
-// Initialize
-document.addEventListener('DOMContentLoaded', initRouter);
+  <script src="script.js"></script>
+</body>
+</html>
