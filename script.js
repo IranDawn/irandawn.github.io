@@ -3,39 +3,88 @@ const DATABASE_REPO = 'database';
 const DEFAULT_BRANCH = 'main';
 const RAW_BASE = `https://raw.githubusercontent.com/${GITHUB_ORG}`;
 const BROWSE_BASE = `https://github.com/${GITHUB_ORG}`;
+const FOOTER_LINK = BROWSE_BASE;
 const INDEX_PATH = 'INDEX.json';
 const MAX_ITEMS = 50;
 const DEFAULT_SECTION = 'home';
+const DEFAULT_LANG = 'en';
 
-const UI_COPY = {
-  siteTitle: 'Iran Dawn',
-  homeLead: [
-    'Open archive documenting events in Iran through community-submitted content.',
-    'All data is publicly accessible, verifiable, and preserved on GitHub.'
-  ].join(' '),
-  databaseLead: 'Browse archived content. All items are stored as structured JSON files.',
-  eventsLead: 'Timeline of documented events.',
-  submitLead: 'Help document events by submitting photos, videos, or reports.',
-  submitSteps: [
-    'Choose a template (Media Report, Event Report, etc.)',
-    'Fill out the form with accurate information',
-    'Submit and wait for automated validation',
-    'If valid, a pull request is created for maintainer review'
-  ],
-  submitGuidelines: [
-    'Only submit content you have rights to share',
-    'Remove any personal identifiable information (PII)',
-    'Provide accurate dates, times, and locations when possible',
-    'All submissions are licensed under CC-BY-4.0'
-  ],
-  submitNotes: [
-    'Submissions are validated automatically for required fields and PII.',
-    'Maintainers review submissions for authenticity and accuracy before merging.',
-    'All activity is logged in the public audit log.'
-  ],
-  footerText: 'Iran Dawn is an open-source project.',
-  footerLink: 'https://github.com/irandawn',
-  footerLinkLabel: 'View on GitHub'
+const LOCALES = {
+  en: {
+    dir: 'ltr',
+    strings: {
+      'site.title': 'Iran Dawn',
+      'nav.home': 'Home',
+      'nav.database': 'Database',
+      'nav.events': 'Events',
+      'nav.stats': 'Stats',
+      'nav.submit': 'Submit',
+      'home.title': 'Iran Dawn',
+      'home.lead': 'Open archive documenting events in Iran through community-submitted content. All data is publicly accessible, verifiable, and preserved on GitHub.',
+      'home.stats.total_items': 'Total Items',
+      'home.stats.events': 'Events',
+      'home.stats.submissions': 'Submissions',
+      'home.actions.browse': 'Browse Database',
+      'home.actions.submit': 'Submit Content',
+      'database.title': 'Database',
+      'database.lead': 'Browse archived content. All items are stored as structured JSON files.',
+      'database.search.placeholder': 'Search by description, event, or ID...',
+      'database.filters.type_all': 'All Types',
+      'database.filters.status_all': 'All Statuses',
+      'database.loading': 'Loading database...',
+      'database.empty': 'No content found.',
+      'database.error': 'Failed to load database.',
+      'database.showing': 'Showing {shown} of {total} items.',
+      'database.summary.empty': 'No summary available.',
+      'events.title': 'Events',
+      'events.lead': 'Timeline of documented events.',
+      'events.loading': 'Loading events...',
+      'events.empty': 'No events have been published yet.',
+      'events.fallback_title': 'Event {id}',
+      'stats.title': 'Statistics',
+      'stats.content_distribution': 'Content Distribution',
+      'stats.submission_activity': 'Submission Activity',
+      'stats.recent_activity': 'Recent Activity',
+      'stats.loading': 'Loading statistics...',
+      'stats.activity_loading': 'Loading activity log...',
+      'stats.recent_loading': 'Loading recent activity...',
+      'stats.empty': 'No data available.',
+      'stats.recent.empty': 'No recent activity.',
+      'stats.activity.default': 'Activity',
+      'submit.title': 'Submit Content',
+      'submit.lead': 'Help document events by submitting photos, videos, or reports.',
+      'submit.steps.title': 'How to Submit',
+      'submit.steps.portal.prefix': 'Go to the',
+      'submit.steps.portal.link': 'submission portal',
+      'submit.steps.template': 'Choose a template (Media Report, Event Report, etc.)',
+      'submit.steps.fill': 'Fill out the form with accurate information',
+      'submit.steps.wait': 'Submit and wait for automated validation',
+      'submit.steps.review': 'If valid, a pull request is created for maintainer review',
+      'submit.guidelines.title': 'Guidelines',
+      'submit.guidelines.rights': 'Only submit content you have rights to share',
+      'submit.guidelines.pii': 'Remove any personal identifiable information (PII)',
+      'submit.guidelines.details': 'Provide accurate dates, times, and locations when possible',
+      'submit.guidelines.license': 'All submissions are licensed under CC-BY-4.0',
+      'submit.notes.title': 'What Happens Next',
+      'submit.notes.validation': 'Submissions are validated automatically for required fields and PII.',
+      'submit.notes.review': 'Maintainers review submissions for authenticity and accuracy before merging.',
+      'submit.notes.audit': 'All activity is logged in the public audit log.',
+      'submit.cta': 'Submit Content Now',
+      'footer.text': 'Iran Dawn is an open-source project.',
+      'footer.link': 'View on GitHub',
+      'labels.status': 'Status: {value}',
+      'labels.updated': 'Updated: {value}',
+      'labels.created': 'Created: {value}',
+      'labels.issue': 'Issue',
+      'labels.record': 'Record',
+      'labels.id': 'ID {value}',
+      'labels.issue_number': 'Issue #{value}',
+      'labels.pr_number': 'PR #{value}',
+      'status.active': 'Active',
+      'status.reserved': 'Reserved',
+      'status.unknown': 'Unknown'
+    }
+  }
 };
 
 const state = {
@@ -49,7 +98,8 @@ const state = {
   statsLoaded: false,
   homeLoaded: false,
   sections: [],
-  sectionMap: new Map()
+  sectionMap: new Map(),
+  lang: DEFAULT_LANG
 };
 
 function byId(id) {
@@ -82,12 +132,15 @@ function formatDate(value) {
 function formatStatus(value) {
   const status = String(value ?? '');
   if (status === '1') {
-    return 'Active';
+    return t('status.active');
   }
   if (status === '0') {
-    return 'Reserved';
+    return t('status.reserved');
   }
-  return status ? `Status ${status}` : 'Unknown';
+  if (!status) {
+    return t('status.unknown');
+  }
+  return status;
 }
 
 function createOption(value, label) {
@@ -95,6 +148,58 @@ function createOption(value, label) {
   option.value = value;
   option.textContent = label;
   return option;
+}
+
+function getLocale(lang) {
+  return LOCALES[lang] || LOCALES[DEFAULT_LANG];
+}
+
+function formatString(template, params) {
+  if (!params) {
+    return template;
+  }
+  return template.replace(/\{(\w+)\}/g, (match, key) => {
+    if (Object.prototype.hasOwnProperty.call(params, key)) {
+      return params[key];
+    }
+    return match;
+  });
+}
+
+function t(key, params, fallback) {
+  const locale = getLocale(state.lang);
+  let value = locale && locale.strings ? locale.strings[key] : undefined;
+  if (value === undefined && LOCALES[DEFAULT_LANG]) {
+    value = LOCALES[DEFAULT_LANG].strings[key];
+  }
+  if (value === undefined) {
+    value = fallback !== undefined ? fallback : key;
+  }
+  return formatString(value, params);
+}
+
+function applyTranslations(root = document) {
+  root.querySelectorAll('[data-i18n]').forEach(element => {
+    const key = element.getAttribute('data-i18n');
+    element.textContent = t(key);
+  });
+  root.querySelectorAll('[data-i18n-placeholder]').forEach(element => {
+    const key = element.getAttribute('data-i18n-placeholder');
+    element.setAttribute('placeholder', t(key));
+  });
+  root.querySelectorAll('[data-i18n-title]').forEach(element => {
+    const key = element.getAttribute('data-i18n-title');
+    element.setAttribute('title', t(key));
+  });
+}
+
+function setLanguage(lang) {
+  const next = LOCALES[lang] ? lang : DEFAULT_LANG;
+  state.lang = next;
+  const locale = getLocale(next);
+  document.documentElement.lang = next;
+  document.documentElement.dir = locale && locale.dir ? locale.dir : 'ltr';
+  applyTranslations();
 }
 
 function getSubmitUrl() {
@@ -310,14 +415,14 @@ function buildRecordLinks(record, id) {
 
   if (record && record.payload && record.payload.meta && record.payload.meta.issue_url) {
     links.push({
-      label: 'Issue',
+      label: t('labels.issue'),
       url: record.payload.meta.issue_url
     });
   }
 
   if (path) {
     links.push({
-      label: 'Record',
+      label: t('labels.record'),
       url: `${BROWSE_BASE}/${DATABASE_REPO}/blob/${DEFAULT_BRANCH}/${path}`
     });
   }
@@ -331,30 +436,31 @@ async function renderContentList(items) {
     return;
   }
   if (!items.length) {
-    container.innerHTML = '<p>No content found.</p>';
+    container.innerHTML = '<p data-i18n="database.empty"></p>';
+    applyTranslations(container);
     return;
   }
 
   const slice = items.slice(0, MAX_ITEMS);
   const enriched = await Promise.all(slice.map(enrichItem));
   const rows = enriched.map(({ item, record }) => {
-    const description = escapeHtml(getDescriptionFromRecord(record) || 'No summary available.');
+    const description = escapeHtml(getDescriptionFromRecord(record) || t('database.summary.empty'));
     const created = record ? formatDate(record.created_at) : '';
     const modified = record ? formatDate(record.modified_at) : '';
     const status = formatStatus(item.status);
     const links = buildRecordLinks(record, item.id);
     const linksHtml = links
-      .map(link => `<a href="${link.url}" target="_blank" rel="noreferrer">${link.label}</a>`)
+      .map(link => `<a href="${link.url}" target="_blank" rel="noreferrer">${escapeHtml(link.label)}</a>`)
       .join(' | ');
 
     const metaParts = [];
     if (status) {
-      metaParts.push(`Status: ${status}`);
+      metaParts.push(t('labels.status', { value: status }));
     }
     if (modified) {
-      metaParts.push(`Updated: ${modified}`);
+      metaParts.push(t('labels.updated', { value: modified }));
     } else if (created) {
-      metaParts.push(`Created: ${created}`);
+      metaParts.push(t('labels.created', { value: created }));
     }
     if (linksHtml) {
       metaParts.push(linksHtml);
@@ -374,7 +480,8 @@ async function renderContentList(items) {
 
   let footer = '';
   if (items.length > MAX_ITEMS) {
-    footer = `<p class="loading">Showing ${MAX_ITEMS} of ${items.length} items.</p>`;
+    const shown = Math.min(MAX_ITEMS, items.length);
+    footer = `<p class="loading">${escapeHtml(t('database.showing', { shown, total: items.length }))}</p>`;
   }
 
   container.innerHTML = rows.join('') + footer;
@@ -386,10 +493,13 @@ function populateTypeFilter(types) {
     return;
   }
   select.innerHTML = '';
-  select.appendChild(createOption('', 'All Types'));
+  const allOption = createOption('', '');
+  allOption.dataset.i18n = 'database.filters.type_all';
+  select.appendChild(allOption);
   (types || []).forEach(type => {
     select.appendChild(createOption(type, type));
   });
+  applyTranslations(select);
 }
 
 function populateStatusFilter(statuses) {
@@ -398,10 +508,13 @@ function populateStatusFilter(statuses) {
     return;
   }
   select.innerHTML = '';
-  select.appendChild(createOption('', 'All Statuses'));
+  const allOption = createOption('', '');
+  allOption.dataset.i18n = 'database.filters.status_all';
+  select.appendChild(allOption);
   (statuses || []).forEach(status => {
     select.appendChild(createOption(status, formatStatus(status)));
   });
+  applyTranslations(select);
 }
 
 function filterContent() {
@@ -474,7 +587,8 @@ async function loadDatabase() {
 
   const container = byId('content-list');
   if (container) {
-    container.innerHTML = '<p class="loading">Loading database...</p>';
+    container.innerHTML = '<p class="loading" data-i18n="database.loading"></p>';
+    applyTranslations(container);
   }
 
   const index = await ensureIndex();
@@ -483,7 +597,8 @@ async function loadDatabase() {
 
   if (!index || !byType) {
     if (container) {
-      container.innerHTML = '<p>Failed to load database.</p>';
+      container.innerHTML = '<p data-i18n="database.error"></p>';
+      applyTranslations(container);
     }
     return;
   }
@@ -527,7 +642,8 @@ async function loadEvents() {
 
   const container = byId('events-list');
   if (container) {
-    container.innerHTML = '<p class="loading">Loading events...</p>';
+    container.innerHTML = '<p class="loading" data-i18n="events.loading"></p>';
+    applyTranslations(container);
   }
 
   const byType = await fetchIndexFile('by-type', 'index/by-type.json');
@@ -536,7 +652,8 @@ async function loadEvents() {
 
   if (!eventIds.length) {
     if (container) {
-      container.innerHTML = '<p>No events have been published yet.</p>';
+      container.innerHTML = '<p data-i18n="events.empty"></p>';
+      applyTranslations(container);
     }
     state.eventsLoaded = true;
     return;
@@ -552,9 +669,9 @@ async function loadEvents() {
   const enriched = await Promise.all(items.slice(0, MAX_ITEMS).map(enrichItem));
   const rows = enriched.map(({ item, record }) => {
     const fields = record && record.payload ? record.payload.fields || {} : {};
-    const title = escapeHtml(fields.event || fields.title || `Event ${item.id}`);
+    const title = escapeHtml(fields.event || fields.title || t('events.fallback_title', { id: item.id }));
     const date = escapeHtml(fields.date || fields.event_date || fields.when || '');
-    const description = escapeHtml(getDescriptionFromRecord(record) || 'No description available.');
+    const description = escapeHtml(getDescriptionFromRecord(record) || t('database.summary.empty'));
 
     return `
       <div class="event-item">
@@ -571,17 +688,22 @@ async function loadEvents() {
   state.eventsLoaded = true;
 }
 
+function translateTypeLabel(type) {
+  return t(`types.${type}`, null, type);
+}
+
 function renderStatsTable(containerId, rows) {
   const container = byId(containerId);
   if (!container) {
     return;
   }
   if (!rows.length) {
-    container.innerHTML = '<p class="loading">No data available.</p>';
+    container.innerHTML = '<p class="loading" data-i18n="stats.empty"></p>';
+    applyTranslations(container);
     return;
   }
   container.innerHTML = rows
-    .map(row => `<div class="stats-row"><span>${row.label}</span><span>${row.value}</span></div>`)
+    .map(row => `<div class="stats-row"><span>${escapeHtml(row.label)}</span><span>${row.value}</span></div>`)
     .join('');
 }
 
@@ -596,7 +718,7 @@ async function loadStats() {
 
   if (byType && byType.items) {
     const rows = Object.entries(byType.items)
-      .map(([type, ids]) => ({ label: type, value: ids.length }))
+      .map(([type, ids]) => ({ label: translateTypeLabel(type), value: ids.length }))
       .sort((a, b) => b.value - a.value);
     renderStatsTable('content-stats', rows);
   } else {
@@ -626,15 +748,15 @@ async function loadStats() {
           pieces.push(entry.event);
         }
         if (entry.content_id) {
-          pieces.push(`ID ${entry.content_id}`);
+          pieces.push(t('labels.id', { value: entry.content_id }));
         }
         if (entry.source_issue) {
-          pieces.push(`Issue #${entry.source_issue}`);
+          pieces.push(t('labels.issue_number', { value: entry.source_issue }));
         }
         if (entry.pr_number) {
-          pieces.push(`PR #${entry.pr_number}`);
+          pieces.push(t('labels.pr_number', { value: entry.pr_number }));
         }
-        const message = escapeHtml(pieces.join(' | ') || 'Activity');
+        const message = escapeHtml(pieces.join(' | ') || t('stats.activity.default'));
         const time = entry.timestamp ? escapeHtml(formatDate(entry.timestamp)) : '';
         return `
           <div class="activity-item">
@@ -646,7 +768,9 @@ async function loadStats() {
       container.innerHTML = rows.join('');
     }
   } else if (byId('recent-activity')) {
-    byId('recent-activity').innerHTML = '<p class="loading">No recent activity.</p>';
+    const container = byId('recent-activity');
+    container.innerHTML = '<p class="loading" data-i18n="stats.recent.empty"></p>';
+    applyTranslations(container);
   }
 
   state.statsLoaded = true;
@@ -655,27 +779,27 @@ async function loadStats() {
 function buildHomeSection(section) {
   const actions = [];
   if (state.sections.includes('database')) {
-    actions.push('<a href="#database" class="btn btn-primary">Browse Database</a>');
+    actions.push('<a href="#database" class="btn btn-primary" data-i18n="home.actions.browse"></a>');
   }
   if (state.sections.includes('submit')) {
-    actions.push('<a href="#submit" class="btn btn-secondary">Submit Content</a>');
+    actions.push('<a href="#submit" class="btn btn-secondary" data-i18n="home.actions.submit"></a>');
   }
 
   section.innerHTML = `
-    <h1>${escapeHtml(UI_COPY.siteTitle)}</h1>
-    <p class="lead">${escapeHtml(UI_COPY.homeLead)}</p>
+    <h1 data-i18n="home.title"></h1>
+    <p class="lead" data-i18n="home.lead"></p>
     <div class="stats-grid">
       <div class="stat-card">
         <div class="stat-value" id="total-items">-</div>
-        <div class="stat-label">Total Items</div>
+        <div class="stat-label" data-i18n="home.stats.total_items"></div>
       </div>
       <div class="stat-card">
         <div class="stat-value" id="total-events">-</div>
-        <div class="stat-label">Events</div>
+        <div class="stat-label" data-i18n="home.stats.events"></div>
       </div>
       <div class="stat-card">
         <div class="stat-value" id="total-submissions">-</div>
-        <div class="stat-label">Submissions</div>
+        <div class="stat-label" data-i18n="home.stats.submissions"></div>
       </div>
     </div>
     <div class="action-buttons">
@@ -686,50 +810,50 @@ function buildHomeSection(section) {
 
 function buildDatabaseSection(section) {
   section.innerHTML = `
-    <h1>Database</h1>
-    <p>${escapeHtml(UI_COPY.databaseLead)}</p>
+    <h1 data-i18n="database.title"></h1>
+    <p data-i18n="database.lead"></p>
     <div class="search-box">
-      <input type="text" id="search-input" placeholder="Search by description, event, or ID...">
+      <input type="text" id="search-input" data-i18n-placeholder="database.search.placeholder">
     </div>
     <div class="filter-bar">
       <select id="type-filter"></select>
       <select id="event-filter"></select>
     </div>
     <div id="content-list" class="content-list">
-      <p class="loading">Loading database...</p>
+      <p class="loading" data-i18n="database.loading"></p>
     </div>
   `;
 }
 
 function buildEventsSection(section) {
   section.innerHTML = `
-    <h1>Events</h1>
-    <p>${escapeHtml(UI_COPY.eventsLead)}</p>
+    <h1 data-i18n="events.title"></h1>
+    <p data-i18n="events.lead"></p>
     <div id="events-list" class="events-list">
-      <p class="loading">Loading events...</p>
+      <p class="loading" data-i18n="events.loading"></p>
     </div>
   `;
 }
 
 function buildStatsSection(section) {
   section.innerHTML = `
-    <h1>Statistics</h1>
+    <h1 data-i18n="stats.title"></h1>
     <div class="stats-section">
-      <h2>Content Distribution</h2>
+      <h2 data-i18n="stats.content_distribution"></h2>
       <div id="content-stats" class="stats-table">
-        <p class="loading">Loading statistics...</p>
+        <p class="loading" data-i18n="stats.loading"></p>
       </div>
     </div>
     <div class="stats-section">
-      <h2>Submission Activity</h2>
+      <h2 data-i18n="stats.submission_activity"></h2>
       <div id="submission-stats" class="stats-table">
-        <p class="loading">Loading activity log...</p>
+        <p class="loading" data-i18n="stats.activity_loading"></p>
       </div>
     </div>
     <div class="stats-section">
-      <h2>Recent Activity</h2>
+      <h2 data-i18n="stats.recent_activity"></h2>
       <div id="recent-activity" class="activity-log">
-        <p class="loading">Loading recent activity...</p>
+        <p class="loading" data-i18n="stats.recent_loading"></p>
       </div>
     </div>
   `;
@@ -737,32 +861,33 @@ function buildStatsSection(section) {
 
 function buildSubmitSection(section) {
   const submitUrl = getSubmitUrl();
-  const steps = UI_COPY.submitSteps
-    .map(step => `<li>${escapeHtml(step)}</li>`)
-    .join('');
-  const guidelines = UI_COPY.submitGuidelines
-    .map(item => `<li>${escapeHtml(item)}</li>`)
-    .join('');
-  const notes = UI_COPY.submitNotes
-    .map(item => `<p>${escapeHtml(item)}</p>`)
-    .join('');
-
   section.innerHTML = `
-    <h1>Submit Content</h1>
-    <p>${escapeHtml(UI_COPY.submitLead)}</p>
+    <h1 data-i18n="submit.title"></h1>
+    <p data-i18n="submit.lead"></p>
     <div class="submit-guide">
-      <h2>How to Submit</h2>
+      <h2 data-i18n="submit.steps.title"></h2>
       <ol class="submit-steps">
-        <li>Go to the <a href="${submitUrl}" target="_blank" rel="noreferrer">submission portal</a></li>
-        ${steps}
+        <li>
+          <span data-i18n="submit.steps.portal.prefix"></span>
+          <a href="${submitUrl}" target="_blank" rel="noreferrer" data-i18n="submit.steps.portal.link"></a>
+        </li>
+        <li data-i18n="submit.steps.template"></li>
+        <li data-i18n="submit.steps.fill"></li>
+        <li data-i18n="submit.steps.wait"></li>
+        <li data-i18n="submit.steps.review"></li>
       </ol>
-      <h2>Guidelines</h2>
+      <h2 data-i18n="submit.guidelines.title"></h2>
       <ul class="guidelines">
-        ${guidelines}
+        <li data-i18n="submit.guidelines.rights"></li>
+        <li data-i18n="submit.guidelines.pii"></li>
+        <li data-i18n="submit.guidelines.details"></li>
+        <li data-i18n="submit.guidelines.license"></li>
       </ul>
-      <h2>What Happens Next</h2>
-      ${notes}
-      <a href="${submitUrl}" class="btn btn-primary" target="_blank" rel="noreferrer">Submit Content Now</a>
+      <h2 data-i18n="submit.notes.title"></h2>
+      <p data-i18n="submit.notes.validation"></p>
+      <p data-i18n="submit.notes.review"></p>
+      <p data-i18n="submit.notes.audit"></p>
+      <a href="${submitUrl}" class="btn btn-primary" target="_blank" rel="noreferrer" data-i18n="submit.cta"></a>
     </div>
   `;
 }
@@ -775,8 +900,8 @@ function buildFooter() {
   footer.innerHTML = `
     <div class="container">
       <p>
-        ${escapeHtml(UI_COPY.footerText)}
-        <a href="${UI_COPY.footerLink}" target="_blank" rel="noreferrer">${escapeHtml(UI_COPY.footerLinkLabel)}</a>
+        <span data-i18n="footer.text"></span>
+        <a href="${FOOTER_LINK}" target="_blank" rel="noreferrer" data-i18n="footer.link"></a>
       </p>
     </div>
   `;
@@ -785,27 +910,27 @@ function buildFooter() {
 const SECTION_DEFS = [
   {
     id: 'home',
-    label: 'Home',
+    labelKey: 'nav.home',
     build: buildHomeSection,
     load: loadHomeStats
   },
   {
     id: 'database',
-    label: 'Database',
+    labelKey: 'nav.database',
     build: buildDatabaseSection,
     load: loadDatabase,
     enabled: index => hasIndex(index, 'by-type')
   },
   {
     id: 'events',
-    label: 'Events',
+    labelKey: 'nav.events',
     build: buildEventsSection,
     load: loadEvents,
     enabled: index => hasIndex(index, 'by-type') && hasType(index, 'event')
   },
   {
     id: 'stats',
-    label: 'Stats',
+    labelKey: 'nav.stats',
     build: buildStatsSection,
     load: loadStats,
     enabled: index => hasIndex(index, 'by-type')
@@ -814,7 +939,7 @@ const SECTION_DEFS = [
   },
   {
     id: 'submit',
-    label: 'Submit',
+    labelKey: 'nav.submit',
     build: buildSubmitSection
   }
 ];
@@ -828,7 +953,6 @@ function buildLayout(index) {
 
   const siteTitle = byId('site-title');
   if (siteTitle) {
-    siteTitle.textContent = UI_COPY.siteTitle;
     siteTitle.setAttribute('href', `#${DEFAULT_SECTION}`);
   }
 
@@ -843,7 +967,7 @@ function buildLayout(index) {
     const link = document.createElement('a');
     link.href = `#${def.id}`;
     link.dataset.nav = def.id;
-    link.textContent = def.label;
+    link.dataset.i18n = def.labelKey || `nav.${def.id}`;
     navLinks.appendChild(link);
 
     const section = document.createElement('section');
@@ -854,6 +978,7 @@ function buildLayout(index) {
   });
 
   buildFooter();
+  applyTranslations(document);
 }
 
 function initRouter() {
@@ -897,6 +1022,7 @@ async function handleRouteAsync() {
 async function initApp() {
   const index = await ensureIndex();
   buildLayout(index);
+  setLanguage(DEFAULT_LANG);
   initRouter();
 }
 
