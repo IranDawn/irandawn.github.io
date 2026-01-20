@@ -8,9 +8,15 @@ const INDEX_PATH = 'INDEX.json';
 const MAX_ITEMS = 50;
 const DEFAULT_SECTION = 'home';
 const DEFAULT_LANG = 'en';
+const SETTINGS_KEY = 'irandawn.settings';
+const DEFAULT_SETTINGS = {
+  lang: DEFAULT_LANG,
+  theme: 'system'
+};
 
 const LOCALES = {
   en: {
+    label: 'English',
     dir: 'ltr',
     strings: {
       'site.title': 'Iran Dawn',
@@ -19,6 +25,7 @@ const LOCALES = {
       'nav.events': 'Events',
       'nav.stats': 'Stats',
       'nav.submit': 'Submit',
+      'nav.language': 'Language',
       'home.title': 'Iran Dawn',
       'home.lead': 'Open archive documenting events in Iran through community-submitted content. All data is publicly accessible, verifiable, and preserved on GitHub.',
       'home.stats.total_items': 'Total Items',
@@ -84,6 +91,237 @@ const LOCALES = {
       'status.reserved': 'Reserved',
       'status.unknown': 'Unknown'
     }
+  },
+  fr: {
+    label: 'Français',
+    dir: 'ltr',
+    strings: {
+      'site.title': 'Iran Dawn',
+      'nav.home': 'Accueil',
+      'nav.database': 'Base de données',
+      'nav.events': 'Événements',
+      'nav.stats': 'Statistiques',
+      'nav.submit': 'Soumettre',
+      'nav.language': 'Langue',
+      'home.title': 'Iran Dawn',
+      'home.lead': 'Archive ouverte documentant les événements en Iran grâce aux contributions de la communauté. Toutes les données sont publiques, vérifiables et conservées sur GitHub.',
+      'home.stats.total_items': 'Total des éléments',
+      'home.stats.events': 'Événements',
+      'home.stats.submissions': 'Soumissions',
+      'home.actions.browse': 'Parcourir la base',
+      'home.actions.submit': 'Soumettre du contenu',
+      'database.title': 'Base de données',
+      'database.lead': 'Parcourez le contenu archivé. Tous les éléments sont stockés en JSON structuré.',
+      'database.search.placeholder': 'Rechercher par description, événement ou ID...',
+      'database.filters.type_all': 'Tous les types',
+      'database.filters.status_all': 'Tous les statuts',
+      'database.loading': 'Chargement de la base de données...',
+      'database.empty': 'Aucun contenu trouvé.',
+      'database.error': 'Échec du chargement de la base de données.',
+      'database.showing': 'Affichage de {shown} sur {total} éléments.',
+      'database.summary.empty': 'Aucun résumé disponible.',
+      'events.title': 'Événements',
+      'events.lead': 'Chronologie des événements documentés.',
+      'events.loading': 'Chargement des événements...',
+      'events.empty': 'Aucun événement n\'a encore été publié.',
+      'events.fallback_title': 'Événement {id}',
+      'stats.title': 'Statistiques',
+      'stats.content_distribution': 'Répartition du contenu',
+      'stats.submission_activity': 'Activité des soumissions',
+      'stats.recent_activity': 'Activité récente',
+      'stats.loading': 'Chargement des statistiques...',
+      'stats.activity_loading': 'Chargement du journal d\'activité...',
+      'stats.recent_loading': 'Chargement de l\'activité récente...',
+      'stats.empty': 'Aucune donnée disponible.',
+      'stats.recent.empty': 'Aucune activité récente.',
+      'stats.activity.default': 'Activité',
+      'submit.title': 'Soumettre du contenu',
+      'submit.lead': 'Aidez à documenter les événements en soumettant des photos, vidéos ou rapports.',
+      'submit.steps.title': 'Comment soumettre',
+      'submit.steps.portal.prefix': 'Accédez au',
+      'submit.steps.portal.link': 'portail de soumission',
+      'submit.steps.template': 'Choisissez un modèle (Rapport média, Rapport d\'événement, etc.)',
+      'submit.steps.fill': 'Remplissez le formulaire avec des informations exactes',
+      'submit.steps.wait': 'Soumettez et attendez la validation automatique',
+      'submit.steps.review': 'Si valide, une PR est créée pour examen',
+      'submit.guidelines.title': 'Consignes',
+      'submit.guidelines.rights': 'Ne soumettez que du contenu que vous avez le droit de partager',
+      'submit.guidelines.pii': 'Supprimez toute information personnelle identifiable (PII)',
+      'submit.guidelines.details': 'Fournissez des dates, heures et lieux précis si possible',
+      'submit.guidelines.license': 'Toutes les soumissions sont sous licence CC-BY-4.0',
+      'submit.notes.title': 'Que se passe-t-il ensuite',
+      'submit.notes.validation': 'Les soumissions sont validées automatiquement pour les champs requis et les PII.',
+      'submit.notes.review': 'Les mainteneurs vérifient l\'authenticité et l\'exactitude avant fusion.',
+      'submit.notes.audit': 'Toute activité est enregistrée dans le journal public.',
+      'submit.cta': 'Soumettre maintenant',
+      'footer.text': 'Iran Dawn est un projet open source.',
+      'footer.link': 'Voir sur GitHub',
+      'labels.status': 'Statut : {value}',
+      'labels.updated': 'Mis à jour : {value}',
+      'labels.created': 'Créé : {value}',
+      'labels.issue': 'Issue',
+      'labels.record': 'Enregistrement',
+      'labels.id': 'ID {value}',
+      'labels.issue_number': 'Issue #{value}',
+      'labels.pr_number': 'PR #{value}',
+      'status.active': 'Actif',
+      'status.reserved': 'Réservé',
+      'status.unknown': 'Inconnu'
+    }
+  },
+  fa: {
+    label: 'فارسی',
+    dir: 'rtl',
+    strings: {
+      'site.title': 'ایران داون',
+      'nav.home': 'خانه',
+      'nav.database': 'پایگاه داده',
+      'nav.events': 'رویدادها',
+      'nav.stats': 'آمار',
+      'nav.submit': 'ارسال',
+      'nav.language': 'زبان',
+      'home.title': 'ایران داون',
+      'home.lead': 'آرشیوی باز برای مستندسازی رویدادهای ایران با مشارکت جامعه. همه داده‌ها عمومی، قابل راستی‌آزمایی و روی گیت‌هاب حفظ می‌شوند.',
+      'home.stats.total_items': 'کل موارد',
+      'home.stats.events': 'رویدادها',
+      'home.stats.submissions': 'ارسال‌ها',
+      'home.actions.browse': 'مشاهده پایگاه داده',
+      'home.actions.submit': 'ارسال محتوا',
+      'database.title': 'پایگاه داده',
+      'database.lead': 'محتوای آرشیوشده را مرور کنید. همه موارد به صورت JSON ساخت‌یافته ذخیره می‌شوند.',
+      'database.search.placeholder': 'جستجو بر اساس توضیح، رویداد یا شناسه...',
+      'database.filters.type_all': 'همه انواع',
+      'database.filters.status_all': 'همه وضعیت‌ها',
+      'database.loading': 'در حال بارگذاری پایگاه داده...',
+      'database.empty': 'محتوایی یافت نشد.',
+      'database.error': 'بارگذاری پایگاه داده ناموفق بود.',
+      'database.showing': 'نمایش {shown} از {total} مورد.',
+      'database.summary.empty': 'خلاصه‌ای موجود نیست.',
+      'events.title': 'رویدادها',
+      'events.lead': 'خط زمانی رویدادهای مستند.',
+      'events.loading': 'در حال بارگذاری رویدادها...',
+      'events.empty': 'هنوز رویدادی منتشر نشده است.',
+      'events.fallback_title': 'رویداد {id}',
+      'stats.title': 'آمار',
+      'stats.content_distribution': 'توزیع محتوا',
+      'stats.submission_activity': 'فعالیت ارسال‌ها',
+      'stats.recent_activity': 'فعالیت اخیر',
+      'stats.loading': 'در حال بارگذاری آمار...',
+      'stats.activity_loading': 'در حال بارگذاری گزارش فعالیت...',
+      'stats.recent_loading': 'در حال بارگذاری فعالیت‌های اخیر...',
+      'stats.empty': 'داده‌ای موجود نیست.',
+      'stats.recent.empty': 'فعالیت اخیر وجود ندارد.',
+      'stats.activity.default': 'فعالیت',
+      'submit.title': 'ارسال محتوا',
+      'submit.lead': 'با ارسال عکس، ویدئو یا گزارش به مستندسازی رویدادها کمک کنید.',
+      'submit.steps.title': 'روش ارسال',
+      'submit.steps.portal.prefix': 'به',
+      'submit.steps.portal.link': 'درگاه ارسال',
+      'submit.steps.template': 'یک الگو انتخاب کنید (گزارش رسانه‌ای، گزارش رویداد و ...)',
+      'submit.steps.fill': 'فرم را با اطلاعات دقیق تکمیل کنید',
+      'submit.steps.wait': 'ارسال کنید و منتظر اعتبارسنجی خودکار بمانید',
+      'submit.steps.review': 'در صورت اعتبار، یک PR برای بررسی نگه‌دارندگان ایجاد می‌شود',
+      'submit.guidelines.title': 'راهنما',
+      'submit.guidelines.rights': 'فقط محتوایی را ارسال کنید که حق انتشار آن را دارید',
+      'submit.guidelines.pii': 'اطلاعات شناسایی شخصی (PII) را حذف کنید',
+      'submit.guidelines.details': 'تا حد امکان تاریخ، زمان و مکان دقیق ارائه کنید',
+      'submit.guidelines.license': 'همه ارسال‌ها تحت مجوز CC-BY-4.0 هستند',
+      'submit.notes.title': 'بعد چه می‌شود',
+      'submit.notes.validation': 'ارسال‌ها به طور خودکار برای فیلدهای لازم و PII بررسی می‌شوند.',
+      'submit.notes.review': 'نگه‌دارندگان پیش از ادغام، صحت و دقت را بررسی می‌کنند.',
+      'submit.notes.audit': 'همه فعالیت‌ها در گزارش عمومی ثبت می‌شود.',
+      'submit.cta': 'اکنون ارسال کنید',
+      'footer.text': 'ایران داون یک پروژه متن‌باز است.',
+      'footer.link': 'مشاهده در گیت‌هاب',
+      'labels.status': 'وضعیت: {value}',
+      'labels.updated': 'به‌روزرسانی: {value}',
+      'labels.created': 'ایجاد شده: {value}',
+      'labels.issue': 'Issue',
+      'labels.record': 'رکورد',
+      'labels.id': 'شناسه {value}',
+      'labels.issue_number': 'Issue #{value}',
+      'labels.pr_number': 'PR #{value}',
+      'status.active': 'فعال',
+      'status.reserved': 'رزرو',
+      'status.unknown': 'نامشخص'
+    }
+  },
+  ar: {
+    label: 'العربية',
+    dir: 'rtl',
+    strings: {
+      'site.title': 'إيران داون',
+      'nav.home': 'الرئيسية',
+      'nav.database': 'قاعدة البيانات',
+      'nav.events': 'الأحداث',
+      'nav.stats': 'إحصاءات',
+      'nav.submit': 'إرسال',
+      'nav.language': 'اللغة',
+      'home.title': 'إيران داون',
+      'home.lead': 'أرشيف مفتوح يوثّق أحداث إيران بمساهمات المجتمع. جميع البيانات عامة، قابلة للتحقق، ومحفوظة على GitHub.',
+      'home.stats.total_items': 'إجمالي العناصر',
+      'home.stats.events': 'الأحداث',
+      'home.stats.submissions': 'عمليات الإرسال',
+      'home.actions.browse': 'استعراض قاعدة البيانات',
+      'home.actions.submit': 'إرسال محتوى',
+      'database.title': 'قاعدة البيانات',
+      'database.lead': 'تصفح المحتوى المؤرشف. يتم حفظ جميع العناصر كملفات JSON منظمة.',
+      'database.search.placeholder': 'ابحث بالوصف أو الحدث أو المعرف...',
+      'database.filters.type_all': 'كل الأنواع',
+      'database.filters.status_all': 'كل الحالات',
+      'database.loading': 'جارٍ تحميل قاعدة البيانات...',
+      'database.empty': 'لا يوجد محتوى.',
+      'database.error': 'فشل تحميل قاعدة البيانات.',
+      'database.showing': 'عرض {shown} من أصل {total} عنصر.',
+      'database.summary.empty': 'لا يوجد ملخص.',
+      'events.title': 'الأحداث',
+      'events.lead': 'خط زمني للأحداث الموثقة.',
+      'events.loading': 'جارٍ تحميل الأحداث...',
+      'events.empty': 'لم يتم نشر أي أحداث بعد.',
+      'events.fallback_title': 'الحدث {id}',
+      'stats.title': 'إحصاءات',
+      'stats.content_distribution': 'توزيع المحتوى',
+      'stats.submission_activity': 'نشاط الإرسال',
+      'stats.recent_activity': 'النشاط الأخير',
+      'stats.loading': 'جارٍ تحميل الإحصاءات...',
+      'stats.activity_loading': 'جارٍ تحميل سجل النشاط...',
+      'stats.recent_loading': 'جارٍ تحميل النشاط الأخير...',
+      'stats.empty': 'لا توجد بيانات.',
+      'stats.recent.empty': 'لا يوجد نشاط حديث.',
+      'stats.activity.default': 'نشاط',
+      'submit.title': 'إرسال محتوى',
+      'submit.lead': 'ساهم بتوثيق الأحداث عبر إرسال صور أو فيديوهات أو تقارير.',
+      'submit.steps.title': 'كيفية الإرسال',
+      'submit.steps.portal.prefix': 'اذهب إلى',
+      'submit.steps.portal.link': 'بوابة الإرسال',
+      'submit.steps.template': 'اختر نموذجًا (تقرير وسائط، تقرير حدث، إلخ)',
+      'submit.steps.fill': 'املأ النموذج بمعلومات دقيقة',
+      'submit.steps.wait': 'أرسل وانتظر التحقق الآلي',
+      'submit.steps.review': 'إذا كان صحيحًا، سيتم إنشاء طلب سحب للمراجعة',
+      'submit.guidelines.title': 'إرشادات',
+      'submit.guidelines.rights': 'أرسل فقط محتوى تملك حقوق مشاركته',
+      'submit.guidelines.pii': 'احذف أي معلومات تعريف شخصية (PII)',
+      'submit.guidelines.details': 'قدّم التاريخ والوقت والمكان بدقة قدر الإمكان',
+      'submit.guidelines.license': 'جميع الإرسالات مرخصة تحت CC-BY-4.0',
+      'submit.notes.title': 'ماذا بعد',
+      'submit.notes.validation': 'يتم التحقق من الإرسالات تلقائيًا للحقول المطلوبة وPII.',
+      'submit.notes.review': 'يراجع المشرفون المحتوى قبل الدمج.',
+      'submit.notes.audit': 'يتم تسجيل جميع النشاطات في سجل تدقيق عام.',
+      'submit.cta': 'أرسل الآن',
+      'footer.text': 'إيران داون مشروع مفتوح المصدر.',
+      'footer.link': 'عرض على GitHub',
+      'labels.status': 'الحالة: {value}',
+      'labels.updated': 'آخر تحديث: {value}',
+      'labels.created': 'تاريخ الإنشاء: {value}',
+      'labels.issue': 'Issue',
+      'labels.record': 'سجل',
+      'labels.id': 'المعرّف {value}',
+      'labels.issue_number': 'Issue #{value}',
+      'labels.pr_number': 'PR #{value}',
+      'status.active': 'نشط',
+      'status.reserved': 'محجوز',
+      'status.unknown': 'غير معروف'
+    }
   }
 };
 
@@ -99,7 +337,8 @@ const state = {
   homeLoaded: false,
   sections: [],
   sectionMap: new Map(),
-  lang: DEFAULT_LANG
+  lang: DEFAULT_LANG,
+  settings: { ...DEFAULT_SETTINGS }
 };
 
 function byId(id) {
@@ -150,6 +389,38 @@ function createOption(value, label) {
   return option;
 }
 
+function loadSettings() {
+  const settings = { ...DEFAULT_SETTINGS };
+  try {
+    const raw = localStorage.getItem(SETTINGS_KEY);
+    if (!raw) {
+      return settings;
+    }
+    const parsed = JSON.parse(raw);
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+      return settings;
+    }
+    return { ...settings, ...parsed };
+  } catch {
+    return settings;
+  }
+}
+
+function saveSettings(settings) {
+  try {
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+  } catch {
+    // Ignore storage errors (private mode, blocked, etc.).
+  }
+}
+
+function updateSettings(partial) {
+  const next = { ...state.settings, ...partial };
+  state.settings = next;
+  saveSettings(next);
+  return next;
+}
+
 function getLocale(lang) {
   return LOCALES[lang] || LOCALES[DEFAULT_LANG];
 }
@@ -193,13 +464,55 @@ function applyTranslations(root = document) {
   });
 }
 
-function setLanguage(lang) {
+function applyLanguage(lang) {
   const next = LOCALES[lang] ? lang : DEFAULT_LANG;
   state.lang = next;
   const locale = getLocale(next);
   document.documentElement.lang = next;
   document.documentElement.dir = locale && locale.dir ? locale.dir : 'ltr';
-  applyTranslations();
+  return next;
+}
+
+function updateLanguagePicker() {
+  const select = byId('language-select');
+  if (!select) {
+    return;
+  }
+  select.value = state.lang;
+  select.setAttribute('aria-label', t('nav.language'));
+}
+
+function refreshLanguageSensitiveContent() {
+  if (state.databaseLoaded) {
+    filterContent();
+  }
+  if (state.eventsLoaded) {
+    state.eventsLoaded = false;
+    void loadEvents();
+  }
+  if (state.statsLoaded) {
+    state.statsLoaded = false;
+    void loadStats();
+  }
+  if (state.homeLoaded) {
+    state.homeLoaded = false;
+    void loadHomeStats();
+  }
+}
+
+function setLanguage(lang, options = {}) {
+  const { persist = true, apply = true, refresh = true } = options;
+  const next = applyLanguage(lang);
+  if (persist) {
+    updateSettings({ lang: next });
+  }
+  updateLanguagePicker();
+  if (apply) {
+    applyTranslations();
+  }
+  if (refresh) {
+    refreshLanguageSensitiveContent();
+  }
 }
 
 function getSubmitUrl() {
@@ -907,6 +1220,38 @@ function buildFooter() {
   `;
 }
 
+function populateLanguageOptions(select) {
+  select.innerHTML = '';
+  Object.entries(LOCALES).forEach(([code, locale]) => {
+    const option = document.createElement('option');
+    option.value = code;
+    option.textContent = locale.label || code;
+    select.appendChild(option);
+  });
+  select.value = state.lang;
+  select.setAttribute('aria-label', t('nav.language'));
+}
+
+function buildLanguagePicker(container) {
+  const wrapper = document.createElement('div');
+  wrapper.className = 'nav-language';
+
+  const label = document.createElement('span');
+  label.dataset.i18n = 'nav.language';
+  wrapper.appendChild(label);
+
+  const select = document.createElement('select');
+  select.id = 'language-select';
+  select.className = 'language-select';
+  select.addEventListener('change', () => {
+    setLanguage(select.value);
+  });
+  wrapper.appendChild(select);
+
+  container.appendChild(wrapper);
+  populateLanguageOptions(select);
+}
+
 const SECTION_DEFS = [
   {
     id: 'home',
@@ -977,6 +1322,7 @@ function buildLayout(index) {
     main.appendChild(section);
   });
 
+  buildLanguagePicker(navLinks);
   buildFooter();
   applyTranslations(document);
 }
@@ -1020,9 +1366,10 @@ async function handleRouteAsync() {
 }
 
 async function initApp() {
+  state.settings = loadSettings();
+  applyLanguage(state.settings.lang || DEFAULT_LANG);
   const index = await ensureIndex();
   buildLayout(index);
-  setLanguage(DEFAULT_LANG);
   initRouter();
 }
 
