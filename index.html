@@ -58,6 +58,11 @@
           <li id="step-index" class="loading-step" data-i18n="loading.step.index">Fetching database index...</li>
           <li id="step-layout" class="loading-step" data-i18n="loading.step.layout">Building interface...</li>
         </ul>
+        <div id="app-loading-error" class="app-loading-error" hidden>
+          <p data-i18n="loading.error.title">Something went wrong</p>
+          <p id="app-loading-error-message" class="app-loading-error-message"></p>
+          <button type="button" onclick="location.reload()" data-i18n="loading.error.retry">Retry</button>
+        </div>
       </div>
     </main>
     <noscript>

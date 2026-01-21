@@ -100,7 +100,11 @@ const LOCALES = {
       'loading.step.sdk': 'Initializing SDK...',
       'loading.step.settings': 'Loading settings...',
       'loading.step.index': 'Fetching database index...',
-      'loading.step.layout': 'Building interface...'
+      'loading.step.layout': 'Building interface...',
+      'loading.error.title': 'Something went wrong',
+      'loading.error.retry': 'Retry',
+      'loading.error.sdk': 'Failed to initialize SDK. Please refresh the page.',
+      'loading.error.index': 'Failed to fetch database. Please check your connection.'
     }
   },
   fr: {
@@ -185,7 +189,11 @@ const LOCALES = {
       'loading.step.sdk': 'Initialisation du SDK...',
       'loading.step.settings': 'Chargement des paramètres...',
       'loading.step.index': 'Récupération de l\'index...',
-      'loading.step.layout': 'Construction de l\'interface...'
+      'loading.step.layout': 'Construction de l\'interface...',
+      'loading.error.title': 'Une erreur est survenue',
+      'loading.error.retry': 'Réessayer',
+      'loading.error.sdk': 'Échec de l\'initialisation du SDK. Veuillez actualiser.',
+      'loading.error.index': 'Échec de la récupération. Vérifiez votre connexion.'
     }
   },
   fa: {
@@ -270,7 +278,11 @@ const LOCALES = {
       'loading.step.sdk': 'راه‌اندازی SDK...',
       'loading.step.settings': 'بارگذاری تنظیمات...',
       'loading.step.index': 'دریافت فهرست پایگاه داده...',
-      'loading.step.layout': 'ساخت رابط کاربری...'
+      'loading.step.layout': 'ساخت رابط کاربری...',
+      'loading.error.title': 'مشکلی پیش آمد',
+      'loading.error.retry': 'تلاش مجدد',
+      'loading.error.sdk': 'خطا در راه‌اندازی SDK. لطفاً صفحه را بارگذاری مجدد کنید.',
+      'loading.error.index': 'خطا در دریافت پایگاه داده. اتصال خود را بررسی کنید.'
     }
   },
   ar: {
@@ -355,7 +367,11 @@ const LOCALES = {
       'loading.step.sdk': 'تهيئة SDK...',
       'loading.step.settings': 'تحميل الإعدادات...',
       'loading.step.index': 'جلب فهرس قاعدة البيانات...',
-      'loading.step.layout': 'بناء الواجهة...'
+      'loading.step.layout': 'بناء الواجهة...',
+      'loading.error.title': 'حدث خطأ ما',
+      'loading.error.retry': 'إعادة المحاولة',
+      'loading.error.sdk': 'فشل تهيئة SDK. يرجى تحديث الصفحة.',
+      'loading.error.index': 'فشل جلب قاعدة البيانات. تحقق من اتصالك.'
     }
   }
 };
@@ -393,6 +409,22 @@ function updateLoadingStep(stepId, status) {
     step.classList.remove('pending', 'active', 'done', 'error');
     step.classList.add(status);
   }
+}
+
+function showLoadingError(messageKey) {
+  const errorContainer = byId('app-loading-error');
+  const errorMessage = byId('app-loading-error-message');
+  const title = document.querySelector('.app-loading-title');
+  if (errorContainer) {
+    errorContainer.hidden = false;
+  }
+  if (errorMessage) {
+    errorMessage.textContent = t(messageKey);
+  }
+  if (title) {
+    title.style.display = 'none';
+  }
+  applyTranslations(document);
 }
 
 function escapeHtml(value) {
@@ -1348,29 +1380,65 @@ async function initApp() {
   if (!client) {
     console.error('IranDawn SDK is not loaded.');
     updateLoadingStep('step-sdk', 'error');
+    showLoadingError('loading.error.sdk');
     return;
   }
   updateLoadingStep('step-sdk', 'done');
 
   // Step 2: Load settings
   updateLoadingStep('step-settings', 'active');
-  state.settings = loadSettings();
-  applyLanguage(state.settings.lang || DEFAULT_LANG);
-  applyTranslations(document);
-  updateLoadingStep('step-settings', 'done');
+  try {
+    state.settings = loadSettings();
+    applyLanguage(state.settings.lang || DEFAULT_LANG);
+    applyTranslations(document);
+    updateLoadingStep('step-settings', 'done');
+  } catch (error) {
+    console.error('Failed to load settings:', error);
+    updateLoadingStep('step-settings', 'error');
+    // Continue with defaults, don't block the app
+    updateLoadingStep('step-settings', 'done');
+  }
 
   // Step 3: Fetch database index
   updateLoadingStep('step-index', 'active');
-  await client.getIndex();
-  updateLoadingStep('step-index', 'done');
+  try {
+    const index = await client.getIndex();
+    if (!index) {
+      throw new Error('Index returned null');
+    }
+    updateLoadingStep('step-index', 'done');
+  } catch (error) {
+    console.error('Failed to fetch database index:', error);
+    updateLoadingStep('step-index', 'error');
+    showLoadingError('loading.error.index');
+    return;
+  }
 
   // Step 4: Build layout
   updateLoadingStep('step-layout', 'active');
-  buildLayout();
+  try {
+    buildLayout();
+    initRouter();
+  } catch (error) {
+    console.error('Failed to build layout:', error);
+    updateLoadingStep('step-layout', 'error');
+    showLoadingError('loading.error.index');
+  }
+}
 
-  initRouter();
+function registerServiceWorker() {
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js')
+      .then(registration => {
+        console.log('Service Worker registered:', registration.scope);
+      })
+      .catch(error => {
+        console.warn('Service Worker registration failed:', error);
+      });
+  }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+  registerServiceWorker();
   void initApp();
 });
