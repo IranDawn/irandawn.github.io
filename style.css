@@ -67,6 +67,20 @@ body {
   padding-bottom: var(--menu-offset);
 }
 
+/* Offline Banner */
+.offline-banner {
+  background: var(--warning);
+  color: #fff;
+  text-align: center;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.offline-banner[hidden] {
+  display: none;
+}
+
 #main-content {
   flex: 1;
 }
@@ -756,6 +770,86 @@ h2 {
 
 .app-loading-error button:hover {
   background: var(--accent-hover);
+}
+
+/* Version Section in Settings */
+.version-section {
+  margin-top: 32px;
+  padding: 24px;
+  background: var(--bg-secondary);
+  border: 2px solid var(--border);
+  border-radius: 12px;
+}
+
+.version-section h2 {
+  margin: 0 0 16px 0;
+  font-size: 18px;
+}
+
+.version-info {
+  margin-bottom: 16px;
+}
+
+.version-info p {
+  margin: 8px 0;
+  font-size: 14px;
+  color: var(--fg);
+}
+
+.version-info #current-version {
+  font-family: 'Monaco', 'Courier New', monospace;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.version-status {
+  font-size: 13px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  display: inline-block;
+  margin-top: 4px;
+}
+
+.version-status.status-ok {
+  background: var(--success);
+  color: #fff;
+}
+
+.version-status.status-warning {
+  background: var(--warning);
+  color: #fff;
+}
+
+.version-status.status-error {
+  background: var(--danger);
+  color: #fff;
+}
+
+.version-status.status-update {
+  background: var(--accent);
+  color: #fff;
+}
+
+.version-status.status-checking {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--fg-muted);
+}
+
+.version-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.version-actions .btn {
+  padding: 10px 18px;
+  font-size: 13px;
+}
+
+.version-actions .btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 /* Desktop (>= 768px) - hide home nav link */

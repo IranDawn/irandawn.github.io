@@ -104,7 +104,18 @@ const LOCALES = {
       'loading.error.title': 'Something went wrong',
       'loading.error.retry': 'Retry',
       'loading.error.sdk': 'Failed to initialize SDK. Please refresh the page.',
-      'loading.error.index': 'Failed to fetch database. Please check your connection.'
+      'loading.error.index': 'Failed to fetch database. Please check your connection.',
+      'offline.message': 'You are offline. Showing cached data.',
+      'settings.version.title': 'App Version',
+      'settings.version.current': 'Current version:',
+      'settings.version.check': 'Check for Updates',
+      'settings.version.update': 'Update Now',
+      'settings.version.checking': 'Checking for updates...',
+      'settings.version.offline': 'Cannot check for updates while offline.',
+      'settings.version.check_failed': 'Failed to check for updates.',
+      'settings.version.up_to_date': 'You have the latest version.',
+      'settings.version.available': 'Version {version} is available.',
+      'settings.version.updating': 'Updating...'
     }
   },
   fr: {
@@ -193,7 +204,18 @@ const LOCALES = {
       'loading.error.title': 'Une erreur est survenue',
       'loading.error.retry': 'Réessayer',
       'loading.error.sdk': 'Échec de l\'initialisation du SDK. Veuillez actualiser.',
-      'loading.error.index': 'Échec de la récupération. Vérifiez votre connexion.'
+      'loading.error.index': 'Échec de la récupération. Vérifiez votre connexion.',
+      'offline.message': 'Vous êtes hors ligne. Affichage des données en cache.',
+      'settings.version.title': 'Version de l\'application',
+      'settings.version.current': 'Version actuelle :',
+      'settings.version.check': 'Vérifier les mises à jour',
+      'settings.version.update': 'Mettre à jour',
+      'settings.version.checking': 'Vérification des mises à jour...',
+      'settings.version.offline': 'Impossible de vérifier hors ligne.',
+      'settings.version.check_failed': 'Échec de la vérification.',
+      'settings.version.up_to_date': 'Vous avez la dernière version.',
+      'settings.version.available': 'Version {version} disponible.',
+      'settings.version.updating': 'Mise à jour...'
     }
   },
   fa: {
@@ -282,7 +304,18 @@ const LOCALES = {
       'loading.error.title': 'مشکلی پیش آمد',
       'loading.error.retry': 'تلاش مجدد',
       'loading.error.sdk': 'خطا در راه‌اندازی SDK. لطفاً صفحه را بارگذاری مجدد کنید.',
-      'loading.error.index': 'خطا در دریافت پایگاه داده. اتصال خود را بررسی کنید.'
+      'loading.error.index': 'خطا در دریافت پایگاه داده. اتصال خود را بررسی کنید.',
+      'offline.message': 'شما آفلاین هستید. داده‌های کش شده نمایش داده می‌شود.',
+      'settings.version.title': 'نسخه برنامه',
+      'settings.version.current': 'نسخه فعلی:',
+      'settings.version.check': 'بررسی به‌روزرسانی',
+      'settings.version.update': 'به‌روزرسانی',
+      'settings.version.checking': 'در حال بررسی...',
+      'settings.version.offline': 'امکان بررسی در حالت آفلاین وجود ندارد.',
+      'settings.version.check_failed': 'خطا در بررسی به‌روزرسانی.',
+      'settings.version.up_to_date': 'شما آخرین نسخه را دارید.',
+      'settings.version.available': 'نسخه {version} موجود است.',
+      'settings.version.updating': 'در حال به‌روزرسانی...'
     }
   },
   ar: {
@@ -371,7 +404,18 @@ const LOCALES = {
       'loading.error.title': 'حدث خطأ ما',
       'loading.error.retry': 'إعادة المحاولة',
       'loading.error.sdk': 'فشل تهيئة SDK. يرجى تحديث الصفحة.',
-      'loading.error.index': 'فشل جلب قاعدة البيانات. تحقق من اتصالك.'
+      'loading.error.index': 'فشل جلب قاعدة البيانات. تحقق من اتصالك.',
+      'offline.message': 'أنت غير متصل. يتم عرض البيانات المخزنة.',
+      'settings.version.title': 'إصدار التطبيق',
+      'settings.version.current': 'الإصدار الحالي:',
+      'settings.version.check': 'التحقق من التحديثات',
+      'settings.version.update': 'تحديث الآن',
+      'settings.version.checking': 'جارٍ التحقق...',
+      'settings.version.offline': 'لا يمكن التحقق أثناء عدم الاتصال.',
+      'settings.version.check_failed': 'فشل التحقق من التحديثات.',
+      'settings.version.up_to_date': 'لديك أحدث إصدار.',
+      'settings.version.available': 'الإصدار {version} متاح.',
+      'settings.version.updating': 'جارٍ التحديث...'
     }
   }
 };
@@ -1211,6 +1255,167 @@ function populateLanguageOptions(select) {
   select.setAttribute('aria-label', t('nav.language'));
 }
 
+// Version management
+const versionState = {
+  current: null,
+  latest: null,
+  updateAvailable: false
+};
+
+async function fetchCachedVersion() {
+  try {
+    const response = await fetch('/version.json');
+    if (response.ok) {
+      return await response.json();
+    }
+  } catch (error) {
+    console.warn('Failed to fetch cached version:', error);
+  }
+  return null;
+}
+
+async function fetchLatestVersion() {
+  if (!navigator.onLine) {
+    return null;
+  }
+  try {
+    // Add ?check param to bypass service worker cache
+    const response = await fetch('/version.json?check=' + Date.now());
+    if (response.ok) {
+      return await response.json();
+    }
+  } catch (error) {
+    console.warn('Failed to fetch latest version:', error);
+  }
+  return null;
+}
+
+function compareVersions(v1, v2) {
+  if (!v1 || !v2) {
+    return 0;
+  }
+  const parts1 = v1.split('.').map(Number);
+  const parts2 = v2.split('.').map(Number);
+  for (let i = 0; i < Math.max(parts1.length, parts2.length); i++) {
+    const a = parts1[i] || 0;
+    const b = parts2[i] || 0;
+    if (a > b) return 1;
+    if (a < b) return -1;
+  }
+  return 0;
+}
+
+async function checkForUpdates() {
+  const statusEl = byId('version-status');
+  const updateBtn = byId('apply-update-btn');
+
+  if (!navigator.onLine) {
+    if (statusEl) {
+      statusEl.textContent = t('settings.version.offline');
+      statusEl.className = 'version-status status-warning';
+    }
+    return;
+  }
+
+  if (statusEl) {
+    statusEl.textContent = t('settings.version.checking');
+    statusEl.className = 'version-status status-checking';
+  }
+
+  const latest = await fetchLatestVersion();
+  versionState.latest = latest;
+
+  if (!latest) {
+    if (statusEl) {
+      statusEl.textContent = t('settings.version.check_failed');
+      statusEl.className = 'version-status status-error';
+    }
+    return;
+  }
+
+  const comparison = compareVersions(latest.version, versionState.current?.version);
+
+  if (comparison > 0) {
+    versionState.updateAvailable = true;
+    if (statusEl) {
+      statusEl.textContent = t('settings.version.available', { version: latest.version });
+      statusEl.className = 'version-status status-update';
+    }
+    if (updateBtn) {
+      updateBtn.hidden = false;
+    }
+  } else {
+    versionState.updateAvailable = false;
+    if (statusEl) {
+      statusEl.textContent = t('settings.version.up_to_date');
+      statusEl.className = 'version-status status-ok';
+    }
+    if (updateBtn) {
+      updateBtn.hidden = true;
+    }
+  }
+}
+
+async function applyUpdate() {
+  if (!navigator.onLine) {
+    return;
+  }
+
+  const statusEl = byId('version-status');
+  const updateBtn = byId('apply-update-btn');
+
+  if (statusEl) {
+    statusEl.textContent = t('settings.version.updating');
+    statusEl.className = 'version-status status-checking';
+  }
+
+  if (updateBtn) {
+    updateBtn.disabled = true;
+  }
+
+  // Tell service worker to clear cache
+  if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+    navigator.serviceWorker.controller.postMessage('clearCache');
+
+    // Listen for cache cleared confirmation
+    navigator.serviceWorker.addEventListener('message', function handler(event) {
+      if (event.data === 'cacheCleared') {
+        navigator.serviceWorker.removeEventListener('message', handler);
+        // Reload to get fresh content
+        location.reload();
+      }
+    });
+
+    // Fallback: reload after timeout if no response
+    setTimeout(() => {
+      location.reload();
+    }, 3000);
+  } else {
+    // No service worker, just reload
+    location.reload();
+  }
+}
+
+async function initVersionUI() {
+  const currentVersionEl = byId('current-version');
+  const checkBtn = byId('check-update-btn');
+  const updateBtn = byId('apply-update-btn');
+
+  // Load cached version
+  versionState.current = await fetchCachedVersion();
+  if (currentVersionEl && versionState.current) {
+    currentVersionEl.textContent = versionState.current.version;
+  }
+
+  // Set up button handlers
+  if (checkBtn) {
+    checkBtn.addEventListener('click', checkForUpdates);
+  }
+  if (updateBtn) {
+    updateBtn.addEventListener('click', applyUpdate);
+  }
+}
+
 function buildLanguagePicker(container) {
   const label = document.createElement('span');
   label.dataset.i18n = 'nav.language';
@@ -1230,11 +1435,23 @@ function buildSettingsSection(section) {
   section.innerHTML = `
     <h1 data-i18n="nav.settings"></h1>
     <div id="language-setting"></div>
+    <div class="version-section">
+      <h2 data-i18n="settings.version.title"></h2>
+      <div class="version-info">
+        <p><span data-i18n="settings.version.current"></span> <span id="current-version">--</span></p>
+        <p id="version-status" class="version-status"></p>
+      </div>
+      <div class="version-actions">
+        <button type="button" id="check-update-btn" class="btn btn-secondary" data-i18n="settings.version.check"></button>
+        <button type="button" id="apply-update-btn" class="btn btn-primary" hidden data-i18n="settings.version.update"></button>
+      </div>
+    </div>
   `;
   const languageSetting = section.querySelector('#language-setting');
   if (languageSetting) {
     buildLanguagePicker(languageSetting);
   }
+  initVersionUI();
 }
 
 const SECTION_DEFS = [
@@ -1438,7 +1655,27 @@ function registerServiceWorker() {
   }
 }
 
+function updateOfflineBanner() {
+  const banner = byId('offline-banner');
+  if (!banner) {
+    return;
+  }
+  if (navigator.onLine) {
+    banner.hidden = true;
+  } else {
+    banner.hidden = false;
+    applyTranslations(banner);
+  }
+}
+
+function initOfflineDetection() {
+  updateOfflineBanner();
+  window.addEventListener('online', updateOfflineBanner);
+  window.addEventListener('offline', updateOfflineBanner);
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   registerServiceWorker();
+  initOfflineDetection();
   void initApp();
 });

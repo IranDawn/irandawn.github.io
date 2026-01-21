@@ -4,7 +4,8 @@ const STATIC_ASSETS = [
   '/index.html',
   '/style.css',
   '/script.js',
-  '/irandawn.js'
+  '/irandawn.js',
+  '/version.json'
 ];
 
 const API_CACHE_NAME = 'irandawn-api-v1';
@@ -36,6 +37,12 @@ self.addEventListener('activate', event => {
 self.addEventListener('fetch', event => {
   const { request } = event;
   const url = new URL(request.url);
+
+  // Version check requests: always network, never cache response from this request
+  if (url.pathname === '/version.json' && url.searchParams.has('check')) {
+    event.respondWith(fetch(request));
+    return;
+  }
 
   // API requests (GitHub raw content): network-first with cache fallback
   if (url.host === API_HOST) {
@@ -116,5 +123,18 @@ function updateCacheInBackground(request, cache) {
 self.addEventListener('message', event => {
   if (event.data === 'skipWaiting') {
     self.skipWaiting();
+  }
+
+  if (event.data === 'clearCache') {
+    event.waitUntil(
+      caches.keys()
+        .then(keys => Promise.all(keys.map(key => caches.delete(key))))
+        .then(() => {
+          // Notify all clients that cache was cleared
+          self.clients.matchAll().then(clients => {
+            clients.forEach(client => client.postMessage('cacheCleared'));
+          });
+        })
+    );
   }
 });
