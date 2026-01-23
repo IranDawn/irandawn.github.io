@@ -43,57 +43,44 @@ jobs:
           if [ -f "favicon.png" ]; then
             echo "Found favicon.png, setting up app icons..."
             
-            # Install ImageMagick for image resizing
             sudo apt-get update
             sudo apt-get install -y imagemagick
             
-            # Get favicon dimensions
             FAVICON_SIZE=$(identify -format "%w" favicon.png)
             HALF_SIZE=$((FAVICON_SIZE/2))
             
-            # Create background.png with circle pattern
-            convert -size ${FAVICON_SIZE}x${FAVICON_SIZE} xc:none \
-              -fill "#0a0a0a" \
-              -draw "circle ${HALF_SIZE},${HALF_SIZE} ${HALF_SIZE},0" \
-              background.png
-            
-            # Composite favicon on top of background to create legacy.png
+            convert -size ${FAVICON_SIZE}x${FAVICON_SIZE} xc:none -fill "#0a0a0a" -draw "circle ${HALF_SIZE},${HALF_SIZE} ${HALF_SIZE},0" background.png
             convert background.png favicon.png -composite legacy.png
             
-            # Create legacy icons for Android < 8.0 from legacy.png
             convert legacy.png -resize 48x48 android-wrapper/app/src/main/res/mipmap-mdpi/ic_launcher.png
             convert legacy.png -resize 72x72 android-wrapper/app/src/main/res/mipmap-hdpi/ic_launcher.png
             convert legacy.png -resize 96x96 android-wrapper/app/src/main/res/mipmap-xhdpi/ic_launcher.png
             convert legacy.png -resize 144x144 android-wrapper/app/src/main/res/mipmap-xxhdpi/ic_launcher.png
             convert legacy.png -resize 192x192 android-wrapper/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png
             
-            # Create adaptive icon resources (for Android 8.0+)
             mkdir -p android-wrapper/app/src/main/res/mipmap-anydpi-v26
             
-            # Create foreground images from favicon.png (108x108dp safe zone with transparent background)
             convert favicon.png -resize 108x108 -background none -gravity center -extent 108x108 android-wrapper/app/src/main/res/mipmap-mdpi/ic_launcher_foreground.png
             convert favicon.png -resize 162x162 -background none -gravity center -extent 162x162 android-wrapper/app/src/main/res/mipmap-hdpi/ic_launcher_foreground.png
             convert favicon.png -resize 216x216 -background none -gravity center -extent 216x216 android-wrapper/app/src/main/res/mipmap-xhdpi/ic_launcher_foreground.png
             convert favicon.png -resize 324x324 -background none -gravity center -extent 324x324 android-wrapper/app/src/main/res/mipmap-xxhdpi/ic_launcher_foreground.png
             convert favicon.png -resize 432x432 -background none -gravity center -extent 432x432 android-wrapper/app/src/main/res/mipmap-xxxhdpi/ic_launcher_foreground.png
             
-            # Create adaptive icon XML
-            cat > android-wrapper/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml <<'ICON_EOF'
-<?xml version="1.0" encoding="utf-8"?>
-<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
-    <background android:drawable="@color/ic_launcher_background"/>
-    <foreground android:drawable="@mipmap/ic_launcher_foreground"/>
-</adaptive-icon>
-ICON_EOF
+            cat > android-wrapper/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml << 'ICON_EOF'
+          <?xml version="1.0" encoding="utf-8"?>
+          <adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+              <background android:drawable="@color/ic_launcher_background"/>
+              <foreground android:drawable="@mipmap/ic_launcher_foreground"/>
+          </adaptive-icon>
+          ICON_EOF
             
-            # Create colors.xml for background color
             mkdir -p android-wrapper/app/src/main/res/values
-            cat > android-wrapper/app/src/main/res/values/colors.xml <<'COLOR_EOF'
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <color name="ic_launcher_background">#0a0a0a</color>
-</resources>
-COLOR_EOF
+            cat > android-wrapper/app/src/main/res/values/colors.xml << 'COLOR_EOF'
+          <?xml version="1.0" encoding="utf-8"?>
+          <resources>
+              <color name="ic_launcher_background">#0a0a0a</color>
+          </resources>
+          COLOR_EOF
             
             echo "App icons created successfully with adaptive icon support"
           else
@@ -102,7 +89,7 @@ COLOR_EOF
       
       - name: Create MainActivity.java
         run: |
-          cat > android-wrapper/app/src/main/java/com/irandawn/toloo/MainActivity.java <<'EOF'
+          cat > android-wrapper/app/src/main/java/com/irandawn/toloo/MainActivity.java << 'EOF'
           package com.irandawn.toloo;
           
           import android.app.Activity;
@@ -128,13 +115,10 @@ COLOR_EOF
                   webSettings.setAllowFileAccess(true);
                   webSettings.setAllowContentAccess(true);
                   
-                  // Enable caching for offline use
                   webSettings.setCacheMode(WebSettings.LOAD_DEFAULT);
                   
-                  // Stay within the WebView
                   webView.setWebViewClient(new WebViewClient());
                   
-                  // Load local index.html
                   webView.loadUrl("file:///android_asset/index.html");
               }
               
@@ -147,11 +131,11 @@ COLOR_EOF
                   }
               }
           }
-EOF
+          EOF
       
       - name: Create AndroidManifest.xml
         run: |
-          cat > android-wrapper/app/src/main/AndroidManifest.xml <<'EOF'
+          cat > android-wrapper/app/src/main/AndroidManifest.xml << 'EOF'
           <?xml version="1.0" encoding="utf-8"?>
           <manifest xmlns:android="http://schemas.android.com/apk/res/android">
               
@@ -175,11 +159,11 @@ EOF
                   </activity>
               </application>
           </manifest>
-EOF
+          EOF
       
       - name: Create build.gradle (app level)
         run: |
-          cat > android-wrapper/app/build.gradle <<'EOF'
+          cat > android-wrapper/app/build.gradle << 'EOF'
           plugins {
               id 'com.android.application'
           }
@@ -210,19 +194,19 @@ EOF
                   }
               }
           }
-EOF
+          EOF
       
       - name: Create build.gradle (project level)
         run: |
-          cat > android-wrapper/build.gradle <<'EOF'
+          cat > android-wrapper/build.gradle << 'EOF'
           plugins {
               id 'com.android.application' version '8.2.0' apply false
           }
-EOF
+          EOF
       
       - name: Create settings.gradle
         run: |
-          cat > android-wrapper/settings.gradle <<'EOF'
+          cat > android-wrapper/settings.gradle << 'EOF'
           pluginManagement {
               repositories {
                   google()
@@ -239,15 +223,15 @@ EOF
           }
           rootProject.name = "Toloo Chat"
           include ':app'
-EOF
+          EOF
       
       - name: Create gradle.properties
         run: |
-          cat > android-wrapper/gradle.properties <<'EOF'
+          cat > android-wrapper/gradle.properties << 'EOF'
           org.gradle.jvmargs=-Xmx2048m -Dfile.encoding=UTF-8
           android.useAndroidX=true
           android.enableJetifier=true
-EOF
+          EOF
       
       - name: Setup signing (if keystore exists)
         env:
@@ -260,7 +244,7 @@ EOF
             echo "Setting up signing configuration..."
             echo "$KEYSTORE_BASE64" | base64 -d > android-wrapper/app/keystore.jks
             
-            cat >> android-wrapper/app/build.gradle <<'GRADLE_EOF'
+            cat >> android-wrapper/app/build.gradle << 'GRADLE_EOF'
           
           android {
               signingConfigs {
@@ -277,7 +261,7 @@ EOF
                   }
               }
           }
-GRADLE_EOF
+          GRADLE_EOF
           else
             echo "No keystore found, building unsigned APK"
           fi
