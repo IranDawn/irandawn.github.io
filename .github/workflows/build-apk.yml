@@ -284,6 +284,8 @@ jobs:
       
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
+        with:
+          cache-read-only: false
       
       - name: Build APK (Debug)
         env:
@@ -303,12 +305,65 @@ jobs:
           cd android-wrapper
           ./gradlew assembleRelease --no-daemon
       
+      - name: Build AAB (Android App Bundle)
+        env:
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          cd android-wrapper
+          ./gradlew bundleRelease --no-daemon
+          ./gradlew bundleDebug --no-daemon
+      
+      - name: Create developer package
+        run: |
+          mkdir -p dev-android
+          
+          # Copy debug APK
+          cp android-wrapper/app/build/outputs/apk/debug/app-debug.apk dev-android/
+          
+          # Copy AAB files
+          cp android-wrapper/app/build/outputs/bundle/release/app-release.aab dev-android/
+          cp android-wrapper/app/build/outputs/bundle/debug/app-debug.aab dev-android/
+          
+          # Copy mapping files if they exist (for ProGuard/R8)
+          if [ -d "android-wrapper/app/build/outputs/mapping" ]; then
+            cp -r android-wrapper/app/build/outputs/mapping dev-android/
+          fi
+          
+          # Create a README for developers
+          cat > dev-android/README.txt << 'DEV_README'
+          Toloo Chat - Developer Package
+          ===============================
+          
+          Contents:
+          - app-debug.apk: Debug build for testing
+          - app-release.aab: Release Android App Bundle for Google Play Store
+          - app-debug.aab: Debug Android App Bundle
+          
+          The AAB (Android App Bundle) format is required for Play Store distribution.
+          APK files can be installed directly on devices for testing.
+          
+          To convert AAB to APK for testing:
+          bundletool build-apks --bundle=app-release.aab --output=app.apks
+          
+          For more info: https://developer.android.com/guide/app-bundle
+          DEV_README
+          
+          # Create the zip file
+          cd dev-android
+          zip -r ../dev-android.zip .
+          cd ..
+      
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
           tag_name: v1.0.${{ github.run_number }}
           name: Toloo Chat v1.0.${{ github.run_number }}
+          body: |
+            ## Download
+            - **app-release.apk** - Ready to install on Android devices
+            - **dev-android.zip** - Developer package (includes debug APK, AAB files for Play Store)
           files: |
-            android-wrapper/app/build/outputs/apk/debug/app-debug.apk
-            android-wrapper/app/build/outputs/apk/release/*.apk
-
+            android-wrapper/app/build/outputs/apk/release/app-release.apk
+            dev-android.zip
