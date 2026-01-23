@@ -60,7 +60,6 @@ jobs:
                   
                   // Enable caching for offline use
                   webSettings.setCacheMode(WebSettings.LOAD_DEFAULT);
-                  webSettings.setAppCacheEnabled(true);
                   
                   // Stay within the WebView
                   webView.setWebViewClient(new WebViewClient());
@@ -84,8 +83,7 @@ jobs:
         run: |
           cat > android-wrapper/app/src/main/AndroidManifest.xml << 'EOF'
           <?xml version="1.0" encoding="utf-8"?>
-          <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-              package="com.irandawn.toloo">
+          <manifest xmlns:android="http://schemas.android.com/apk/res/android">
               
               <uses-permission android:name="android.permission.INTERNET" />
               <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
