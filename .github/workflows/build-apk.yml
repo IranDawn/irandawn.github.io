@@ -28,10 +28,36 @@ jobs:
           mkdir -p android-wrapper/app/src/main/assets
           mkdir -p android-wrapper/app/src/main/java/com/irandawn/toloo
           mkdir -p android-wrapper/app/src/main/res/values
+          mkdir -p android-wrapper/app/src/main/res/mipmap-mdpi
+          mkdir -p android-wrapper/app/src/main/res/mipmap-hdpi
+          mkdir -p android-wrapper/app/src/main/res/mipmap-xhdpi
+          mkdir -p android-wrapper/app/src/main/res/mipmap-xxhdpi
+          mkdir -p android-wrapper/app/src/main/res/mipmap-xxxhdpi
           
           # Copy all website files to assets (everything except .git and .github)
           shopt -s extglob dotglob
           cp -r !(android-wrapper|.git|.github) android-wrapper/app/src/main/assets/ 2>/dev/null || true
+      
+      - name: Setup app icon from favicon.png
+        run: |
+          if [ -f "favicon.png" ]; then
+            echo "Found favicon.png, setting up app icons..."
+            
+            # Install ImageMagick for image resizing
+            sudo apt-get update
+            sudo apt-get install -y imagemagick
+            
+            # Generate different sizes
+            convert favicon.png -resize 48x48 android-wrapper/app/src/main/res/mipmap-mdpi/ic_launcher.png
+            convert favicon.png -resize 72x72 android-wrapper/app/src/main/res/mipmap-hdpi/ic_launcher.png
+            convert favicon.png -resize 96x96 android-wrapper/app/src/main/res/mipmap-xhdpi/ic_launcher.png
+            convert favicon.png -resize 144x144 android-wrapper/app/src/main/res/mipmap-xxhdpi/ic_launcher.png
+            convert favicon.png -resize 192x192 android-wrapper/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png
+            
+            echo "App icons created successfully"
+          else
+            echo "No favicon.png found, skipping custom icon setup"
+          fi
       
       - name: Create MainActivity.java
         run: |
@@ -94,6 +120,7 @@ jobs:
               <application
                   android:allowBackup="true"
                   android:label="Toloo Chat"
+                  android:icon="@mipmap/ic_launcher"
                   android:theme="@android:style/Theme.NoTitleBar.Fullscreen">
                   
                   <activity
