@@ -1,4 +1,4 @@
-name: Build Toloo Chat APK
+name: Build Android APK
 
 on:
   push:
@@ -8,6 +8,10 @@ on:
 
 permissions:
   contents: write
+
+env:
+  APP_ID: com.irandawn.toloo
+  APP_NAME: "Toloo Chat"
 
 jobs:
   build:
@@ -25,8 +29,11 @@ jobs:
       
       - name: Create Android project structure
         run: |
+          # Convert APP_ID to directory path (com.irandawn.toloo -> com/irandawn/toloo)
+          PACKAGE_PATH=$(echo "${{ env.APP_ID }}" | tr '.' '/')
+          
           mkdir -p android-wrapper/app/src/main/assets
-          mkdir -p android-wrapper/app/src/main/java/com/irandawn/toloo
+          mkdir -p android-wrapper/app/src/main/java/${PACKAGE_PATH}
           mkdir -p android-wrapper/app/src/main/res/values
           mkdir -p android-wrapper/app/src/main/res/mipmap-mdpi
           mkdir -p android-wrapper/app/src/main/res/mipmap-hdpi
@@ -34,7 +41,7 @@ jobs:
           mkdir -p android-wrapper/app/src/main/res/mipmap-xxhdpi
           mkdir -p android-wrapper/app/src/main/res/mipmap-xxxhdpi
           
-          # Copy all website files to assets (everything except .git and .github)
+          # Copy all website files to assets
           shopt -s extglob dotglob
           cp -r !(android-wrapper|.git|.github) android-wrapper/app/src/main/assets/ 2>/dev/null || true
       
@@ -49,9 +56,11 @@ jobs:
             FAVICON_SIZE=$(identify -format "%w" favicon.png)
             HALF_SIZE=$((FAVICON_SIZE/2))
             
+            # Create background.png with circle pattern
             convert -size ${FAVICON_SIZE}x${FAVICON_SIZE} xc:none -fill "#0a0a0a" -draw "circle ${HALF_SIZE},${HALF_SIZE} ${HALF_SIZE},0" background.png
             convert background.png favicon.png -composite legacy.png
             
+            # Create legacy icons for Android < 8.0 from legacy.png
             convert legacy.png -resize 48x48 android-wrapper/app/src/main/res/mipmap-mdpi/ic_launcher.png
             convert legacy.png -resize 72x72 android-wrapper/app/src/main/res/mipmap-hdpi/ic_launcher.png
             convert legacy.png -resize 96x96 android-wrapper/app/src/main/res/mipmap-xhdpi/ic_launcher.png
@@ -60,14 +69,14 @@ jobs:
             
             mkdir -p android-wrapper/app/src/main/res/mipmap-anydpi-v26
             
-            # Create foreground images with 20% padding to stay within safe zone (66dp of 108dp)
-            # Safe zone is ~61%, so we scale to 65% and center it
+            # Create foreground images with padding to stay within safe zone (65% of canvas)
             convert favicon.png -resize 70x70 -background none -gravity center -extent 108x108 android-wrapper/app/src/main/res/mipmap-mdpi/ic_launcher_foreground.png
             convert favicon.png -resize 105x105 -background none -gravity center -extent 162x162 android-wrapper/app/src/main/res/mipmap-hdpi/ic_launcher_foreground.png
             convert favicon.png -resize 140x140 -background none -gravity center -extent 216x216 android-wrapper/app/src/main/res/mipmap-xhdpi/ic_launcher_foreground.png
             convert favicon.png -resize 210x210 -background none -gravity center -extent 324x324 android-wrapper/app/src/main/res/mipmap-xxhdpi/ic_launcher_foreground.png
             convert favicon.png -resize 280x280 -background none -gravity center -extent 432x432 android-wrapper/app/src/main/res/mipmap-xxxhdpi/ic_launcher_foreground.png
             
+            # Create adaptive icon XML
             cat > android-wrapper/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml << 'ICON_EOF'
           <?xml version="1.0" encoding="utf-8"?>
           <adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
@@ -91,8 +100,10 @@ jobs:
       
       - name: Create MainActivity.java
         run: |
-          cat > android-wrapper/app/src/main/java/com/irandawn/toloo/MainActivity.java << 'EOF'
-          package com.irandawn.toloo;
+          PACKAGE_PATH=$(echo "${{ env.APP_ID }}" | tr '.' '/')
+          
+          cat > android-wrapper/app/src/main/java/${PACKAGE_PATH}/MainActivity.java << 'EOF'
+          package ${{ env.APP_ID }};
           
           import android.app.Activity;
           import android.os.Bundle;
@@ -146,7 +157,7 @@ jobs:
               
               <application
                   android:allowBackup="true"
-                  android:label="Toloo Chat"
+                  android:label="${{ env.APP_NAME }}"
                   android:icon="@mipmap/ic_launcher"
                   android:theme="@android:style/Theme.NoTitleBar.Fullscreen">
                   
@@ -171,11 +182,11 @@ jobs:
           }
           
           android {
-              namespace 'com.irandawn.toloo'
+              namespace '${{ env.APP_ID }}'
               compileSdk 34
               
               defaultConfig {
-                  applicationId "com.irandawn.toloo"
+                  applicationId "${{ env.APP_ID }}"
                   minSdk 23
                   targetSdk 34
                   versionCode 1
@@ -223,7 +234,7 @@ jobs:
                   mavenCentral()
               }
           }
-          rootProject.name = "Toloo Chat"
+          rootProject.name = "${{ env.APP_NAME }}"
           include ':app'
           EOF
       
@@ -317,23 +328,23 @@ jobs:
       
       - name: Create developer package
         run: |
-          mkdir -p dev-android
+          mkdir -p dev-package
           
           # Copy debug APK
-          cp android-wrapper/app/build/outputs/apk/debug/app-debug.apk dev-android/
+          cp android-wrapper/app/build/outputs/apk/debug/app-debug.apk dev-package/
           
           # Copy AAB files
-          cp android-wrapper/app/build/outputs/bundle/release/app-release.aab dev-android/
-          cp android-wrapper/app/build/outputs/bundle/debug/app-debug.aab dev-android/
+          cp android-wrapper/app/build/outputs/bundle/release/app-release.aab dev-package/
+          cp android-wrapper/app/build/outputs/bundle/debug/app-debug.aab dev-package/
           
           # Copy mapping files if they exist (for ProGuard/R8)
           if [ -d "android-wrapper/app/build/outputs/mapping" ]; then
-            cp -r android-wrapper/app/build/outputs/mapping dev-android/
+            cp -r android-wrapper/app/build/outputs/mapping dev-package/
           fi
           
           # Create a README for developers
-          cat > dev-android/README.txt << 'DEV_README'
-          Toloo Chat - Developer Package
+          cat > dev-package/README.txt << 'DEV_README'
+          ${{ env.APP_NAME }} - Developer Package
           ===============================
           
           Contents:
@@ -351,7 +362,7 @@ jobs:
           DEV_README
           
           # Create the zip file
-          cd dev-android
+          cd dev-package
           zip -r ../dev-android.zip .
           cd ..
       
@@ -359,7 +370,7 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           tag_name: v1.0.${{ github.run_number }}
-          name: Toloo Chat v1.0.${{ github.run_number }}
+          name: ${{ env.APP_NAME }} v1.0.${{ github.run_number }}
           body: |
             ## Download
             - **app-release.apk** - Ready to install on Android devices
