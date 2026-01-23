@@ -1,4 +1,4 @@
-const CACHE_NAME = 'irandawn-v1';
+const CACHE_NAME = 'irandawn-v2';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
@@ -39,7 +39,7 @@ self.addEventListener('fetch', event => {
   const url = new URL(request.url);
 
   // Version check requests: always network, never cache response from this request
-  if (url.pathname === '/version.json' && url.searchParams.has('check')) {
+  if (url.pathname.endsWith('/version.json') && url.searchParams.has('check')) {
     event.respondWith(fetch(request));
     return;
   }

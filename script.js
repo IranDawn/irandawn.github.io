@@ -1264,10 +1264,11 @@ const versionState = {
 
 async function fetchCachedVersion() {
   try {
-    const response = await fetch('/version.json');
+    const response = await fetch('./version.json');
     if (response.ok) {
       return await response.json();
     }
+    console.warn('Failed to fetch cached version: status', response.status);
   } catch (error) {
     console.warn('Failed to fetch cached version:', error);
   }
@@ -1280,10 +1281,11 @@ async function fetchLatestVersion() {
   }
   try {
     // Add ?check param to bypass service worker cache
-    const response = await fetch('/version.json?check=' + Date.now());
+    const response = await fetch('./version.json?check=' + Date.now());
     if (response.ok) {
       return await response.json();
     }
+    console.warn('Failed to fetch latest version: status', response.status);
   } catch (error) {
     console.warn('Failed to fetch latest version:', error);
   }
