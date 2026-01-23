@@ -128,12 +128,6 @@ jobs:
                   versionName "1.0"
               }
               
-              buildTypes {
-                  release {
-                      minifyEnabled false
-                  }
-              }
-              
               compileOptions {
                   sourceCompatibility JavaVersion.VERSION_1_8
                   targetCompatibility JavaVersion.VERSION_1_8
@@ -178,6 +172,54 @@ jobs:
           android.enableJetifier=true
           EOF
       
+      - name: Decode Keystore
+        if: ${{ secrets.KEYSTORE_BASE64 != '' }}
+        run: |
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > android-wrapper/app/keystore.jks
+      
+      - name: Configure signing in build.gradle
+        if: ${{ secrets.KEYSTORE_BASE64 != '' }}
+        run: |
+          cat >> android-wrapper/app/build.gradle << 'EOF'
+          
+          android {
+              signingConfigs {
+                  release {
+                      storeFile file('keystore.jks')
+                      storePassword '${{ secrets.KEYSTORE_PASSWORD }}'
+                      keyAlias '${{ secrets.KEY_ALIAS }}'
+                      keyPassword '${{ secrets.KEY_PASSWORD }}'
+                  }
+              }
+              buildTypes {
+                  release {
+                      minifyEnabled false
+                      signingConfig signingConfigs.release
+                  }
+                  debug {
+                      minifyEnabled false
+                  }
+              }
+          }
+          EOF
+      
+      - name: Configure build types without signing
+        if: ${{ secrets.KEYSTORE_BASE64 == '' }}
+        run: |
+          cat >> android-wrapper/app/build.gradle << 'EOF'
+          
+          android {
+              buildTypes {
+                  release {
+                      minifyEnabled false
+                  }
+                  debug {
+                      minifyEnabled false
+                  }
+              }
+          }
+          EOF
+      
       - name: Install Gradle
         run: |
           wget https://services.gradle.org/distributions/gradle-8.2-bin.zip
@@ -200,7 +242,7 @@ jobs:
           cd android-wrapper
           ./gradlew assembleDebug --no-daemon
       
-      - name: Build APK (Release unsigned)
+      - name: Build APK (Release)
         run: |
           cd android-wrapper
           ./gradlew assembleRelease --no-daemon
@@ -212,5 +254,5 @@ jobs:
           name: Toloo Chat v1.0.${{ github.run_number }}
           files: |
             android-wrapper/app/build/outputs/apk/debug/app-debug.apk
-            android-wrapper/app/build/outputs/apk/release/app-release-unsigned.apk
+            android-wrapper/app/build/outputs/apk/release/app-release.apk
 
