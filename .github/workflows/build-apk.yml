@@ -177,13 +177,22 @@ jobs:
           android.enableJetifier=true
           EOF
       
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v3
+      - name: Install Gradle
+        run: |
+          wget https://services.gradle.org/distributions/gradle-8.2-bin.zip
+          unzip -q gradle-8.2-bin.zip
+          echo "$PWD/gradle-8.2/bin" >> $GITHUB_PATH
       
-      - name: Make gradlew executable
+      - name: Generate Gradle Wrapper
         run: |
           cd android-wrapper
-          chmod +x gradlew || true
+          gradle wrapper --gradle-version 8.2
+      
+      - name: Make gradlew executable
+        run: chmod +x android-wrapper/gradlew
+      
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
       
       - name: Build APK (Debug)
         run: |
@@ -205,3 +214,4 @@ jobs:
             android-wrapper/app/build/outputs/apk/release/app-release-unsigned.apk
         env:
           GITHUB_TOKEN: ${{ secrets.IRANDAWN_TOKEN }}
+
