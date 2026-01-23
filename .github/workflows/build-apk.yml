@@ -78,22 +78,22 @@ jobs:
             convert favicon.png -resize 432x432 -background none -gravity center -extent 432x432 android-wrapper/app/src/main/res/mipmap-xxxhdpi/ic_launcher_foreground.png
             
             # Create adaptive icon XML
-            cat > android-wrapper/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml << 'ICON_EOF'
-            <?xml version="1.0" encoding="utf-8"?>
-            <adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
-                <background android:drawable="@color/ic_launcher_background"/>
-                <foreground android:drawable="@mipmap/ic_launcher_foreground"/>
-            </adaptive-icon>
-            ICON_EOF
+            cat > android-wrapper/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml <<'ICON_EOF'
+<?xml version="1.0" encoding="utf-8"?>
+<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+    <background android:drawable="@color/ic_launcher_background"/>
+    <foreground android:drawable="@mipmap/ic_launcher_foreground"/>
+</adaptive-icon>
+ICON_EOF
             
             # Create colors.xml for background color
             mkdir -p android-wrapper/app/src/main/res/values
-            cat > android-wrapper/app/src/main/res/values/colors.xml << 'COLOR_EOF'
-            <?xml version="1.0" encoding="utf-8"?>
-            <resources>
-                <color name="ic_launcher_background">#0a0a0a</color>
-            </resources>
-            COLOR_EOF
+            cat > android-wrapper/app/src/main/res/values/colors.xml <<'COLOR_EOF'
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="ic_launcher_background">#0a0a0a</color>
+</resources>
+COLOR_EOF
             
             echo "App icons created successfully with adaptive icon support"
           else
@@ -102,7 +102,7 @@ jobs:
       
       - name: Create MainActivity.java
         run: |
-          cat > android-wrapper/app/src/main/java/com/irandawn/toloo/MainActivity.java << 'EOF'
+          cat > android-wrapper/app/src/main/java/com/irandawn/toloo/MainActivity.java <<'EOF'
           package com.irandawn.toloo;
           
           import android.app.Activity;
@@ -147,11 +147,11 @@ jobs:
                   }
               }
           }
-          EOF
+EOF
       
       - name: Create AndroidManifest.xml
         run: |
-          cat > android-wrapper/app/src/main/AndroidManifest.xml << 'EOF'
+          cat > android-wrapper/app/src/main/AndroidManifest.xml <<'EOF'
           <?xml version="1.0" encoding="utf-8"?>
           <manifest xmlns:android="http://schemas.android.com/apk/res/android">
               
@@ -175,11 +175,11 @@ jobs:
                   </activity>
               </application>
           </manifest>
-          EOF
+EOF
       
       - name: Create build.gradle (app level)
         run: |
-          cat > android-wrapper/app/build.gradle << 'EOF'
+          cat > android-wrapper/app/build.gradle <<'EOF'
           plugins {
               id 'com.android.application'
           }
@@ -210,19 +210,19 @@ jobs:
                   }
               }
           }
-          EOF
+EOF
       
       - name: Create build.gradle (project level)
         run: |
-          cat > android-wrapper/build.gradle << 'EOF'
+          cat > android-wrapper/build.gradle <<'EOF'
           plugins {
               id 'com.android.application' version '8.2.0' apply false
           }
-          EOF
+EOF
       
       - name: Create settings.gradle
         run: |
-          cat > android-wrapper/settings.gradle << 'EOF'
+          cat > android-wrapper/settings.gradle <<'EOF'
           pluginManagement {
               repositories {
                   google()
@@ -239,15 +239,15 @@ jobs:
           }
           rootProject.name = "Toloo Chat"
           include ':app'
-          EOF
+EOF
       
       - name: Create gradle.properties
         run: |
-          cat > android-wrapper/gradle.properties << 'EOF'
+          cat > android-wrapper/gradle.properties <<'EOF'
           org.gradle.jvmargs=-Xmx2048m -Dfile.encoding=UTF-8
           android.useAndroidX=true
           android.enableJetifier=true
-          EOF
+EOF
       
       - name: Setup signing (if keystore exists)
         env:
@@ -260,7 +260,7 @@ jobs:
             echo "Setting up signing configuration..."
             echo "$KEYSTORE_BASE64" | base64 -d > android-wrapper/app/keystore.jks
             
-            cat >> android-wrapper/app/build.gradle << 'GRADLE_EOF'
+            cat >> android-wrapper/app/build.gradle <<'GRADLE_EOF'
           
           android {
               signingConfigs {
@@ -277,7 +277,7 @@ jobs:
                   }
               }
           }
-          GRADLE_EOF
+GRADLE_EOF
           else
             echo "No keystore found, building unsigned APK"
           fi
