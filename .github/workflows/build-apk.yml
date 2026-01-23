@@ -6,10 +6,6 @@ on:
       - main
       - master
 
-env:
-  main_project_module: app
-  app_name: "Toloo Chat"
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -23,18 +19,16 @@ jobs:
         with:
           distribution: 'zulu'
           java-version: '17'
-          cache: 'gradle'
       
       - name: Create Android project structure
         run: |
           mkdir -p android-wrapper/app/src/main/assets
           mkdir -p android-wrapper/app/src/main/java/com/irandawn/toloo
           mkdir -p android-wrapper/app/src/main/res/values
-          mkdir -p android-wrapper/app/src/main/res/xml
           
-          # Copy all website files to assets
-          cp -r *.html *.css *.js assets/ images/ fonts/ android-wrapper/app/src/main/assets/ 2>/dev/null || :
-          find . -maxdepth 1 -type f \( -name "*.html" -o -name "*.css" -o -name "*.js" \) -exec cp {} android-wrapper/app/src/main/assets/ \;
+          # Copy all website files to assets (everything except .git and .github)
+          shopt -s extglob dotglob
+          cp -r !(android-wrapper|.git|.github) android-wrapper/app/src/main/assets/ 2>/dev/null || true
       
       - name: Create MainActivity.java
         run: |
@@ -91,16 +85,10 @@ jobs:
           cat > android-wrapper/app/src/main/AndroidManifest.xml << 'EOF'
           <?xml version="1.0" encoding="utf-8"?>
           <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-              package="com.irandawn.toloo"
-              android:versionCode="1"
-              android:versionName="1.0">
+              package="com.irandawn.toloo">
               
               <uses-permission android:name="android.permission.INTERNET" />
               <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-              
-              <uses-sdk
-                  android:minSdkVersion="23"
-                  android:targetSdkVersion="34" />
               
               <application
                   android:allowBackup="true"
@@ -109,7 +97,8 @@ jobs:
                   
                   <activity
                       android:name=".MainActivity"
-                      android:exported="true">
+                      android:exported="true"
+                      android:configChanges="orientation|screenSize|keyboardHidden">
                       <intent-filter>
                           <action android:name="android.intent.action.MAIN" />
                           <category android:name="android.intent.category.LAUNCHER" />
@@ -140,9 +129,6 @@ jobs:
               
               buildTypes {
                   release {
-                      minifyEnabled false
-                  }
-                  debug {
                       minifyEnabled false
                   }
               }
@@ -191,27 +177,26 @@ jobs:
           android.enableJetifier=true
           EOF
       
-      - name: Create gradle wrapper
-        run: |
-          cd android-wrapper
-          gradle wrapper --gradle-version 8.2
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
       
       - name: Make gradlew executable
-        run: chmod +x android-wrapper/gradlew
+        run: |
+          cd android-wrapper
+          chmod +x gradlew || true
       
       - name: Build APK (Debug)
         run: |
           cd android-wrapper
-          ./gradlew assembleDebug
+          ./gradlew assembleDebug --no-daemon
       
       - name: Build APK (Release unsigned)
         run: |
           cd android-wrapper
-          ./gradlew assembleRelease
+          ./gradlew assembleRelease --no-daemon
       
       - name: Create Release
         uses: softprops/action-gh-release@v1
-        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
         with:
           tag_name: v1.0.${{ github.run_number }}
           name: Toloo Chat v1.0.${{ github.run_number }}
