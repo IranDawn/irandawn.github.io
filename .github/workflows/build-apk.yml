@@ -49,11 +49,12 @@ jobs:
             
             # Get favicon dimensions
             FAVICON_SIZE=$(identify -format "%w" favicon.png)
+            HALF_SIZE=$((FAVICON_SIZE/2))
             
             # Create background.png with circle pattern
             convert -size ${FAVICON_SIZE}x${FAVICON_SIZE} xc:none \
               -fill "#0a0a0a" \
-              -draw "circle $((FAVICON_SIZE/2)),$((FAVICON_SIZE/2)) $((FAVICON_SIZE/2)),0" \
+              -draw "circle ${HALF_SIZE},${HALF_SIZE} ${HALF_SIZE},0" \
               background.png
             
             # Composite favicon on top of background to create legacy.png
@@ -78,21 +79,21 @@ jobs:
             
             # Create adaptive icon XML
             cat > android-wrapper/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml << 'ICON_EOF'
-      <?xml version="1.0" encoding="utf-8"?>
-      <adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
-          <background android:drawable="@color/ic_launcher_background"/>
-          <foreground android:drawable="@mipmap/ic_launcher_foreground"/>
-      </adaptive-icon>
-      ICON_EOF
+            <?xml version="1.0" encoding="utf-8"?>
+            <adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+                <background android:drawable="@color/ic_launcher_background"/>
+                <foreground android:drawable="@mipmap/ic_launcher_foreground"/>
+            </adaptive-icon>
+            ICON_EOF
             
             # Create colors.xml for background color
             mkdir -p android-wrapper/app/src/main/res/values
             cat > android-wrapper/app/src/main/res/values/colors.xml << 'COLOR_EOF'
-      <?xml version="1.0" encoding="utf-8"?>
-      <resources>
-          <color name="ic_launcher_background">#0a0a0a</color>
-      </resources>
-      COLOR_EOF
+            <?xml version="1.0" encoding="utf-8"?>
+            <resources>
+                <color name="ic_launcher_background">#0a0a0a</color>
+            </resources>
+            COLOR_EOF
             
             echo "App icons created successfully with adaptive icon support"
           else
