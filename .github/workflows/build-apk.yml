@@ -6,6 +6,9 @@ on:
       - main
       - master
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -210,6 +213,4 @@ jobs:
           files: |
             android-wrapper/app/build/outputs/apk/debug/app-debug.apk
             android-wrapper/app/build/outputs/apk/release/app-release-unsigned.apk
-        env:
-          GITHUB_TOKEN: ${{ secrets.IRANDAWN_TOKEN }}
 
