@@ -100,7 +100,6 @@ const LOCALES = {
       'loading.step.sdk': 'Initializing SDK...',
       'loading.step.settings': 'Loading settings...',
       'loading.step.index': 'Fetching database index...',
-      'loading.step.layout': 'Building interface...',
       'loading.error.title': 'Something went wrong',
       'loading.error.retry': 'Retry',
       'loading.error.sdk': 'Failed to initialize SDK. Please refresh the page.',
@@ -108,6 +107,7 @@ const LOCALES = {
       'offline.message': 'You are offline. Showing cached data.',
       'settings.version.title': 'App Version',
       'settings.version.current': 'Current version:',
+      'settings.version.latest': 'Latest version:',
       'settings.version.check': 'Check for Updates',
       'settings.version.update': 'Update Now',
       'settings.version.checking': 'Checking for updates...',
@@ -200,7 +200,6 @@ const LOCALES = {
       'loading.step.sdk': 'Initialisation du SDK...',
       'loading.step.settings': 'Chargement des paramètres...',
       'loading.step.index': 'Récupération de l\'index...',
-      'loading.step.layout': 'Construction de l\'interface...',
       'loading.error.title': 'Une erreur est survenue',
       'loading.error.retry': 'Réessayer',
       'loading.error.sdk': 'Échec de l\'initialisation du SDK. Veuillez actualiser.',
@@ -208,6 +207,7 @@ const LOCALES = {
       'offline.message': 'Vous êtes hors ligne. Affichage des données en cache.',
       'settings.version.title': 'Version de l\'application',
       'settings.version.current': 'Version actuelle :',
+      'settings.version.latest': 'Dernière version :',
       'settings.version.check': 'Vérifier les mises à jour',
       'settings.version.update': 'Mettre à jour',
       'settings.version.checking': 'Vérification des mises à jour...',
@@ -300,7 +300,6 @@ const LOCALES = {
       'loading.step.sdk': 'راه‌اندازی SDK...',
       'loading.step.settings': 'بارگذاری تنظیمات...',
       'loading.step.index': 'دریافت فهرست پایگاه داده...',
-      'loading.step.layout': 'ساخت رابط کاربری...',
       'loading.error.title': 'مشکلی پیش آمد',
       'loading.error.retry': 'تلاش مجدد',
       'loading.error.sdk': 'خطا در راه‌اندازی SDK. لطفاً صفحه را بارگذاری مجدد کنید.',
@@ -308,6 +307,7 @@ const LOCALES = {
       'offline.message': 'شما آفلاین هستید. داده‌های کش شده نمایش داده می‌شود.',
       'settings.version.title': 'نسخه برنامه',
       'settings.version.current': 'نسخه فعلی:',
+      'settings.version.latest': 'آخرین نسخه:',
       'settings.version.check': 'بررسی به‌روزرسانی',
       'settings.version.update': 'به‌روزرسانی',
       'settings.version.checking': 'در حال بررسی...',
@@ -400,7 +400,6 @@ const LOCALES = {
       'loading.step.sdk': 'تهيئة SDK...',
       'loading.step.settings': 'تحميل الإعدادات...',
       'loading.step.index': 'جلب فهرس قاعدة البيانات...',
-      'loading.step.layout': 'بناء الواجهة...',
       'loading.error.title': 'حدث خطأ ما',
       'loading.error.retry': 'إعادة المحاولة',
       'loading.error.sdk': 'فشل تهيئة SDK. يرجى تحديث الصفحة.',
@@ -408,6 +407,7 @@ const LOCALES = {
       'offline.message': 'أنت غير متصل. يتم عرض البيانات المخزنة.',
       'settings.version.title': 'إصدار التطبيق',
       'settings.version.current': 'الإصدار الحالي:',
+      'settings.version.latest': 'أحدث إصدار:',
       'settings.version.check': 'التحقق من التحديثات',
       'settings.version.update': 'تحديث الآن',
       'settings.version.checking': 'جارٍ التحقق...',
@@ -1264,9 +1264,13 @@ const versionState = {
 
 async function fetchCachedVersion() {
   try {
+    console.log('fetchCachedVersion: fetching ./version.json');
     const response = await fetch('./version.json');
+    console.log('fetchCachedVersion: response status', response.status, 'ok', response.ok);
     if (response.ok) {
-      return await response.json();
+      const data = await response.json();
+      console.log('fetchCachedVersion: successfully parsed JSON', data);
+      return data;
     }
     console.warn('Failed to fetch cached version: status', response.status);
   } catch (error) {
@@ -1339,36 +1343,35 @@ async function checkForUpdates() {
     return;
   }
 
-  const comparison = compareVersions(latest.version, versionState.current?.version);
+  // Display latest version, show update button regardless of version comparison
+  versionState.updateAvailable = true;
 
-  if (comparison > 0) {
-    versionState.updateAvailable = true;
-    if (statusEl) {
-      statusEl.textContent = t('settings.version.available', { version: latest.version });
-      statusEl.className = 'version-status status-update';
-    }
-    if (updateBtn) {
-      updateBtn.hidden = false;
-    }
-  } else {
-    versionState.updateAvailable = false;
-    if (statusEl) {
-      statusEl.textContent = t('settings.version.up_to_date');
-      statusEl.className = 'version-status status-ok';
-    }
-    if (updateBtn) {
-      updateBtn.hidden = true;
-    }
+  // Display latest version in the UI
+  if (window._latestVersionEl && latest.version) {
+    window._latestVersionEl.textContent = latest.version;
+  }
+
+  if (statusEl) {
+    statusEl.textContent = 'Update available';
+    statusEl.className = 'version-status status-update';
+  }
+  if (updateBtn) {
+    updateBtn.hidden = false;
   }
 }
 
 async function applyUpdate() {
+  console.log('applyUpdate called, navigator.onLine:', navigator.onLine);
+
   if (!navigator.onLine) {
+    console.log('User is offline, cannot apply update');
     return;
   }
 
   const statusEl = byId('version-status');
   const updateBtn = byId('apply-update-btn');
+
+  console.log('applyUpdate: statusEl:', statusEl, 'updateBtn:', updateBtn);
 
   if (statusEl) {
     statusEl.textContent = t('settings.version.updating');
@@ -1379,35 +1382,42 @@ async function applyUpdate() {
     updateBtn.disabled = true;
   }
 
+  console.log('applyUpdate: sending clearCache message to service worker');
+
   // Tell service worker to clear cache
   if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+    console.log('applyUpdate: service worker controller found');
     navigator.serviceWorker.controller.postMessage('clearCache');
 
-    // Listen for cache cleared confirmation
-    navigator.serviceWorker.addEventListener('message', function handler(event) {
-      if (event.data === 'cacheCleared') {
-        navigator.serviceWorker.removeEventListener('message', handler);
-        // Reload to get fresh content
-        location.reload();
-      }
-    });
+    // Listen for controller change (new service worker activation)
+    const controllerChangeHandler = () => {
+      console.log('applyUpdate: service worker controller changed, reloading page');
+      navigator.serviceWorker.removeEventListener('controllerchange', controllerChangeHandler);
+      location.reload();
+    };
+
+    navigator.serviceWorker.addEventListener('controllerchange', controllerChangeHandler);
 
     // Fallback: reload after timeout if no response
     setTimeout(() => {
+      console.log('applyUpdate: timeout reached, forcing reload');
       location.reload();
     }, 3000);
   } else {
+    console.log('applyUpdate: no service worker controller, reloading anyway');
     // No service worker, just reload
     location.reload();
   }
 }
 
-async function initVersionUI() {
-  const currentVersionEl = byId('current-version');
-  const checkBtn = byId('check-update-btn');
-  const updateBtn = byId('apply-update-btn');
+async function initVersionUI(section) {
+  // Search within the section, not the whole document
+  const currentVersionEl = section ? section.querySelector('#current-version') : byId('current-version');
+  const latestVersionEl = section ? section.querySelector('#latest-version') : byId('latest-version');
+  const checkBtn = section ? section.querySelector('#check-update-btn') : byId('check-update-btn');
+  const updateBtn = section ? section.querySelector('#apply-update-btn') : byId('apply-update-btn');
 
-  console.log('initVersionUI: currentVersionEl:', currentVersionEl, 'checkBtn:', checkBtn, 'updateBtn:', updateBtn);
+  console.log('initVersionUI: currentVersionEl:', currentVersionEl, 'latestVersionEl:', latestVersionEl, 'checkBtn:', checkBtn, 'updateBtn:', updateBtn);
 
   // Load cached version
   versionState.current = await fetchCachedVersion();
@@ -1415,6 +1425,9 @@ async function initVersionUI() {
   if (currentVersionEl && versionState.current) {
     currentVersionEl.textContent = versionState.current.version;
   }
+
+  // Store reference to latest version element for later updates
+  window._latestVersionEl = latestVersionEl;
 
   // Set up button handlers
   if (checkBtn) {
@@ -1451,6 +1464,7 @@ async function buildSettingsSection(section) {
       <h2 data-i18n="settings.version.title"></h2>
       <div class="version-info">
         <p><span data-i18n="settings.version.current"></span> <span id="current-version">--</span></p>
+        <p><span data-i18n="settings.version.latest"></span> <span id="latest-version">--</span></p>
         <p id="version-status" class="version-status"></p>
       </div>
       <div class="version-actions">
@@ -1463,7 +1477,7 @@ async function buildSettingsSection(section) {
   if (languageSetting) {
     buildLanguagePicker(languageSetting);
   }
-  await initVersionUI();
+  await initVersionUI(section);
 }
 
 const SECTION_DEFS = [
@@ -1600,57 +1614,174 @@ async function handleRouteAsync() {
   }
 }
 
-async function initApp() {
-  // Apply translations to loading UI first
-  applyTranslations(document);
+function createLoadingUI() {
+  const main = byId('main-content');
+  if (!main) return;
 
-  // Step 1: SDK check
-  updateLoadingStep('step-sdk', 'active');
+  const loadingHTML = `
+    <div id="app-loading" class="app-loading">
+      <div class="app-loading-title">
+        <span class="spinner" aria-hidden="true"></span>
+        <span data-i18n="loading.title">Loading...</span>
+      </div>
+      <ul class="app-loading-steps">
+        <li id="step-sdk" class="loading-step" data-i18n="loading.step.sdk">Initializing SDK...</li>
+        <li id="step-settings" class="loading-step" data-i18n="loading.step.settings">Loading settings...</li>
+        <li id="step-index" class="loading-step" data-i18n="loading.step.index">Fetching database index...</li>
+      </ul>
+      <div id="app-loading-error" class="app-loading-error" hidden>
+        <p data-i18n="loading.error.title">Something went wrong</p>
+        <p id="app-loading-error-message" class="app-loading-error-message"></p>
+        <button type="button" onclick="location.reload()" data-i18n="loading.error.retry">Retry</button>
+      </div>
+    </div>
+  `;
+
+  main.innerHTML = loadingHTML;
+  applyTranslations(main);
+}
+
+function removeLoadingUI() {
+  const appLoading = byId('app-loading');
+  if (appLoading) {
+    appLoading.remove();
+  }
+}
+
+function getIndexCache() {
+  try {
+    const stored = localStorage.getItem('irandawn.indexCache');
+    if (!stored) {
+      console.log('No cached index found');
+      return null;
+    }
+    const parsed = JSON.parse(stored);
+    return {
+      timestamp: parsed.timestamp,
+      index: parsed.index
+    };
+  } catch (e) {
+    console.warn('Failed to parse cached index:', e);
+    return null;
+  }
+}
+
+function setIndexCache(indexData) {
+  try {
+    const cacheData = {
+      timestamp: Date.now(),
+      index: indexData
+    };
+    localStorage.setItem('irandawn.indexCache', JSON.stringify(cacheData));
+    console.log('Cached index data to localStorage');
+  } catch (e) {
+    console.warn('Could not save index cache:', e);
+  }
+}
+
+function isCacheFresh(maxAgeSeconds = 60) {
+  const cache = getIndexCache();
+  if (!cache) {
+    console.log('No cached index found');
+    return false;
+  }
+
+  const ageSeconds = (Date.now() - cache.timestamp) / 1000;
+  const isFresh = ageSeconds < maxAgeSeconds;
+  console.log(`Cache age: ${ageSeconds.toFixed(1)}s, fresh: ${isFresh}`);
+  return isFresh;
+}
+
+function getCachedIndex() {
+  const cache = getIndexCache();
+  return cache ? cache.index : null;
+}
+
+async function initApp() {
+  // Step 0: SDK check and load settings (no UI needed)
   if (!client) {
     console.error('IranDawn SDK is not loaded.');
+    createLoadingUI();
     updateLoadingStep('step-sdk', 'error');
     showLoadingError('loading.error.sdk');
     return;
   }
-  updateLoadingStep('step-sdk', 'done');
 
-  // Step 2: Load settings
-  updateLoadingStep('step-settings', 'active');
+  // Load settings
   try {
     state.settings = loadSettings();
     applyLanguage(state.settings.lang || DEFAULT_LANG);
-    applyTranslations(document);
-    updateLoadingStep('step-settings', 'done');
   } catch (error) {
     console.error('Failed to load settings:', error);
-    updateLoadingStep('step-settings', 'error');
-    // Continue with defaults, don't block the app
+    // Continue with defaults
+  }
+
+  // Step 1: Get database index (from cache or fresh fetch)
+  let index;
+  const needsUpdate = !isCacheFresh(60);
+
+  if (needsUpdate) {
+    console.log('Cache is stale, showing loading UI and fetching fresh data');
+    // Create and show loading UI only if we need to update
+    createLoadingUI();
+    applyTranslations(document);
+
+    updateLoadingStep('step-sdk', 'done');
     updateLoadingStep('step-settings', 'done');
-  }
+    updateLoadingStep('step-index', 'active');
 
-  // Step 3: Fetch database index
-  updateLoadingStep('step-index', 'active');
-  try {
-    const index = await client.getIndex();
-    if (!index) {
-      throw new Error('Index returned null');
+    try {
+      index = await client.getIndex();
+      if (!index) {
+        throw new Error('Index returned null');
+      }
+      // Cache the full index data
+      setIndexCache(index);
+      updateLoadingStep('step-index', 'done');
+    } catch (error) {
+      console.error('Failed to fetch database index:', error);
+      updateLoadingStep('step-index', 'error');
+      showLoadingError('loading.error.index');
+      return;
     }
-    updateLoadingStep('step-index', 'done');
-  } catch (error) {
-    console.error('Failed to fetch database index:', error);
-    updateLoadingStep('step-index', 'error');
-    showLoadingError('loading.error.index');
-    return;
+  } else {
+    console.log('Cache is fresh, using cached index data and skipping loading UI');
+    index = getCachedIndex();
+    if (!index) {
+      console.error('Cache exists but index is null, needs fresh fetch');
+      createLoadingUI();
+      applyTranslations(document);
+      updateLoadingStep('step-index', 'active');
+      try {
+        index = await client.getIndex();
+        if (!index) {
+          throw new Error('Index returned null');
+        }
+        setIndexCache(index);
+        updateLoadingStep('step-index', 'done');
+      } catch (error) {
+        console.error('Failed to fetch database index:', error);
+        updateLoadingStep('step-index', 'error');
+        showLoadingError('loading.error.index');
+        return;
+      }
+    } else {
+      // Ensure client has the index loaded (for SDK methods that depend on it)
+      // This doesn't make a network request if index is already cached internally
+      console.log('Ensuring client has index loaded from cache');
+      await client.getIndex();
+    }
   }
 
-  // Step 4: Build layout
-  updateLoadingStep('step-layout', 'active');
+  // Step 2: Build layout with the index data (same code for cache or fresh data)
   try {
     await buildLayout();
     initRouter();
   } catch (error) {
     console.error('Failed to build layout:', error);
-    updateLoadingStep('step-layout', 'error');
+    removeLoadingUI();
+    createLoadingUI();
+    updateLoadingStep('step-index', 'error');
     showLoadingError('loading.error.index');
   }
 }
