@@ -34,11 +34,23 @@ const LOCALES = {
       'nav.menu': 'Menu',
       'home.title': 'Iran Dawn',
       'home.lead': 'Open archive documenting events in Iran through community-submitted content. All data is publicly accessible, verifiable, and preserved on GitHub.',
+      'home.mission.title': 'Our Mission',
+      'home.mission.description': 'Iran Dawn is part of a broader movement to create software and infrastructure for the public interest. We document events while also building tools designed specifically for unstable or restricted networks.',
+      'home.mission.toloo': 'Toloo Chat (گفتگوی طلوع) is our independent text-based chat protocol, designed to function reliably even in restricted network environments.',
+      'home.related.title': 'Similar Projects',
+      'home.related.mahsa.title': 'Mahsa Server',
+      'home.related.mahsa.description': 'Community-powered network infrastructure for independent connectivity in Iran.',
+      'home.related.nasnet.title': 'NasNet - Starlink For Iran',
+      'home.related.nasnet.description': 'Independent satellite internet infrastructure initiative providing alternative connectivity solutions.',
       'home.stats.total_items': 'Total Items',
       'home.stats.events': 'Events',
       'home.stats.submissions': 'Submissions',
       'home.actions.browse': 'Browse Database',
       'home.actions.submit': 'Submit Content',
+      'project.website': 'Website',
+      'project.twitter': 'Twitter/X',
+      'project.telegram': 'Telegram',
+      'project.donate': 'Donate',
       'database.title': 'Database',
       'database.lead': 'Browse archived content. All items are stored as structured JSON files.',
       'database.search.placeholder': 'Search by description, event, or ID...',
@@ -134,11 +146,23 @@ const LOCALES = {
       'nav.menu': 'Menu',
       'home.title': 'Iran Dawn',
       'home.lead': 'Archive ouverte documentant les événements en Iran grâce aux contributions de la communauté. Toutes les données sont publiques, vérifiables et conservées sur GitHub.',
+      'home.mission.title': 'Notre Mission',
+      'home.mission.description': 'Iran Dawn fait partie d\'un mouvement plus large pour créer des logiciels et des infrastructures pour l\'intérêt public. Nous documentons les événements tout en construisant des outils conçus spécifiquement pour les réseaux instables ou restreints.',
+      'home.mission.toloo': 'Toloo Chat (گفتگوی طلوع) est notre protocole de chat textuel indépendant, conçu pour fonctionner de manière fiable même dans les environnements réseau restreints.',
+      'home.related.title': 'Projets Similaires',
+      'home.related.mahsa.title': 'Mahsa Server',
+      'home.related.mahsa.description': 'Infrastructure réseau communautaire pour la connectivité indépendante en Iran.',
+      'home.related.nasnet.title': 'NasNet - Starlink Pour l\'Iran',
+      'home.related.nasnet.description': 'Initiative d\'infrastructure Internet par satellite indépendante offrant des solutions de connectivité alternatives.',
       'home.stats.total_items': 'Total des éléments',
       'home.stats.events': 'Événements',
       'home.stats.submissions': 'Soumissions',
       'home.actions.browse': 'Parcourir la base',
       'home.actions.submit': 'Soumettre du contenu',
+      'project.website': 'Site Web',
+      'project.twitter': 'Twitter/X',
+      'project.telegram': 'Telegram',
+      'project.donate': 'Donner',
       'database.title': 'Base de données',
       'database.lead': 'Parcourez le contenu archivé. Tous les éléments sont stockés en JSON structuré.',
       'database.search.placeholder': 'Rechercher par description, événement ou ID...',
@@ -234,11 +258,23 @@ const LOCALES = {
       'nav.menu': 'منو',
       'home.title': 'ایران داون',
       'home.lead': 'آرشیوی باز برای مستندسازی رویدادهای ایران با مشارکت جامعه. همه داده‌ها عمومی، قابل راستی‌آزمایی و روی گیت‌هاب حفظ می‌شوند.',
+      'home.mission.title': 'ماموریت ما',
+      'home.mission.description': 'ایران داون بخشی از یک جنبش گسترده‌تر برای ایجاد نرم‌افزار و زیرساخت برای نفع عمومی است. ما رویدادها را مستند می‌کنیم و ابزارهایی می‌سازیم که خصوصاً برای شبکه‌های ناپایدار یا محدود طراحی شده‌اند.',
+      'home.mission.toloo': 'توله چت (گفتگوی طلوع) پروتکل پیام رسانی متنی مستقل ما است که برای عملکرد قابل‌اعتماد حتی در محیط‌های شبکه محدود طراحی شده است.',
+      'home.related.title': 'پروژه‌های مشابه',
+      'home.related.mahsa.title': 'سرور محسا',
+      'home.related.mahsa.description': 'زیرساخت شبکه جامعه‌پایه برای اتصال مستقل در ایران.',
+      'home.related.nasnet.title': 'ناس‌نت - استارلینک ایران',
+      'home.related.nasnet.description': 'ابتکار زیرساخت اینترنت ماهواره‌ای مستقل که راه‌حل‌های اتصال جایگزین ارائه می‌دهد.',
       'home.stats.total_items': 'کل موارد',
       'home.stats.events': 'رویدادها',
       'home.stats.submissions': 'ارسال‌ها',
       'home.actions.browse': 'مشاهده پایگاه داده',
       'home.actions.submit': 'ارسال محتوا',
+      'project.website': 'وب‌سایت',
+      'project.twitter': 'توییتر/X',
+      'project.telegram': 'تلگرام',
+      'project.donate': 'کمک مالی',
       'database.title': 'پایگاه داده',
       'database.lead': 'محتوای آرشیوشده را مرور کنید. همه موارد به صورت JSON ساخت‌یافته ذخیره می‌شوند.',
       'database.search.placeholder': 'جستجو بر اساس توضیح، رویداد یا شناسه...',
@@ -334,11 +370,23 @@ const LOCALES = {
       'nav.menu': 'القائمة',
       'home.title': 'إيران داون',
       'home.lead': 'أرشيف مفتوح يوثّق أحداث إيران بمساهمات المجتمع. جميع البيانات عامة، قابلة للتحقق، ومحفوظة على GitHub.',
+      'home.mission.title': 'مهمتنا',
+      'home.mission.description': 'إيران داون جزء من حركة أوسع لإنشاء برمجيات وبنية أساسية للصالح العام. نوثق الأحداث بينما نبني أدوات مصممة خصيصاً للشبكات غير المستقرة أو المقيدة.',
+      'home.mission.toloo': 'تولو تشات (گفتگوی طلوع) هو بروتوكول الدردشة النصية المستقل لدينا، المصمم للعمل بشكل موثوق حتى في بيئات الشبكة المقيدة.',
+      'home.related.title': 'مشاريع مماثلة',
+      'home.related.mahsa.title': 'خادم محسا',
+      'home.related.mahsa.description': 'بنية أساسية شبكية يدعمها المجتمع للاتصال المستقل في إيران.',
+      'home.related.nasnet.title': 'ناسنت - ستارلينك إيران',
+      'home.related.nasnet.description': 'مبادرة بنية أساسية إنترنت فضائي مستقلة توفر حلول اتصال بديلة.',
       'home.stats.total_items': 'إجمالي العناصر',
       'home.stats.events': 'الأحداث',
       'home.stats.submissions': 'عمليات الإرسال',
       'home.actions.browse': 'استعراض قاعدة البيانات',
       'home.actions.submit': 'إرسال محتوى',
+      'project.website': 'الموقع الإلكتروني',
+      'project.twitter': 'تويتر/X',
+      'project.telegram': 'تيليغرام',
+      'project.support': 'ادعمنا',
       'database.title': 'قاعدة البيانات',
       'database.lead': 'تصفح المحتوى المؤرشف. يتم حفظ جميع العناصر كملفات JSON منظمة.',
       'database.search.placeholder': 'ابحث بالوصف أو الحدث أو المعرف...',
@@ -1139,6 +1187,13 @@ function buildHomeSection(section) {
   section.innerHTML = `
     <h1 data-i18n="home.title"></h1>
     <p class="lead" data-i18n="home.lead"></p>
+
+    <div class="mission-section">
+      <h2 data-i18n="home.mission.title"></h2>
+      <p data-i18n="home.mission.description"></p>
+      <p data-i18n="home.mission.toloo"></p>
+    </div>
+
     <div class="stats-grid">
       <div class="stat-card">
         <div class="stat-value" id="total-items">-</div>
@@ -1153,6 +1208,31 @@ function buildHomeSection(section) {
         <div class="stat-label" data-i18n="home.stats.submissions"></div>
       </div>
     </div>
+
+    <div class="related-projects">
+      <h2 data-i18n="home.related.title"></h2>
+      <div class="projects-grid">
+        <div class="project-card">
+          <h3 data-i18n="home.related.mahsa.title"></h3>
+          <p data-i18n="home.related.mahsa.description"></p>
+          <div class="project-links">
+            <a href="https://mahsanet.com/" target="_blank" rel="noreferrer" data-i18n="project.website"></a>
+            <a href="https://x.com/mahsanet" target="_blank" rel="noreferrer" data-i18n="project.twitter"></a>
+            <a href="https://t.me/mahsa_net" target="_blank" rel="noreferrer" data-i18n="project.telegram"></a>
+          </div>
+        </div>
+        <div class="project-card">
+          <h3 data-i18n="home.related.nasnet.title"></h3>
+          <p data-i18n="home.related.nasnet.description"></p>
+          <div class="project-links">
+            <a href="https://t.me/joinNASNET" target="_blank" rel="noreferrer" data-i18n="project.telegram"></a>
+            <a href="https://x.com/joinNASNET" target="_blank" rel="noreferrer" data-i18n="project.twitter"></a>
+            <a href="https://donate.holisticresilience.org/page/HamyarNet" target="_blank" rel="noreferrer" data-i18n="project.donate"></a>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div class="action-buttons">
       ${actions.join('')}
     </div>

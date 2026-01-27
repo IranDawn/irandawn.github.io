@@ -433,6 +433,95 @@ h2 {
   font-weight: 600;
 }
 
+/* Mission Section */
+.mission-section {
+  margin: 32px 0;
+  padding: 24px;
+  background: var(--bg-secondary);
+  border-left: 4px solid var(--accent);
+  border-radius: 8px;
+}
+
+.mission-section h2 {
+  margin-top: 0;
+  margin-bottom: 16px;
+}
+
+.mission-section p {
+  margin: 12px 0;
+  color: var(--fg);
+  line-height: 1.7;
+}
+
+/* Related Projects */
+.related-projects {
+  margin: 48px 0;
+}
+
+.related-projects h2 {
+  margin-bottom: 24px;
+}
+
+.projects-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
+.project-card {
+  padding: 24px;
+  background: var(--bg-secondary);
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.project-card:hover {
+  border-color: var(--accent);
+  box-shadow: 0 4px 12px var(--shadow);
+}
+
+.project-card h3 {
+  margin: 0;
+  font-size: 18px;
+  color: var(--accent);
+}
+
+.project-card p {
+  margin: 0;
+  color: var(--fg);
+  font-size: 14px;
+  line-height: 1.6;
+  flex-grow: 1;
+}
+
+.project-links {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+.project-links a {
+  display: inline-block;
+  padding: 8px 12px;
+  background: var(--accent-light);
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--accent);
+  transition: all 0.2s ease;
+}
+
+.project-links a:hover {
+  background: var(--accent);
+  color: #fff;
+  text-decoration: none;
+}
+
 /* Search & Filter */
 .search-box {
   margin: 24px 0;
