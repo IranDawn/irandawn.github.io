@@ -1308,10 +1308,12 @@ function compareVersions(v1, v2) {
 }
 
 async function checkForUpdates() {
+  console.log('checkForUpdates called, navigator.onLine:', navigator.onLine);
   const statusEl = byId('version-status');
   const updateBtn = byId('apply-update-btn');
 
   if (!navigator.onLine) {
+    console.log('User is offline, cannot check for updates');
     if (statusEl) {
       statusEl.textContent = t('settings.version.offline');
       statusEl.className = 'version-status status-warning';
@@ -1324,7 +1326,9 @@ async function checkForUpdates() {
     statusEl.className = 'version-status status-checking';
   }
 
+  console.log('Fetching latest version from network...');
   const latest = await fetchLatestVersion();
+  console.log('Latest version response:', latest);
   versionState.latest = latest;
 
   if (!latest) {
@@ -1403,15 +1407,21 @@ async function initVersionUI() {
   const checkBtn = byId('check-update-btn');
   const updateBtn = byId('apply-update-btn');
 
+  console.log('initVersionUI: currentVersionEl:', currentVersionEl, 'checkBtn:', checkBtn, 'updateBtn:', updateBtn);
+
   // Load cached version
   versionState.current = await fetchCachedVersion();
+  console.log('initVersionUI: loaded cached version:', versionState.current);
   if (currentVersionEl && versionState.current) {
     currentVersionEl.textContent = versionState.current.version;
   }
 
   // Set up button handlers
   if (checkBtn) {
+    console.log('Attaching click handler to check-update-btn');
     checkBtn.addEventListener('click', checkForUpdates);
+  } else {
+    console.warn('check-update-btn not found');
   }
   if (updateBtn) {
     updateBtn.addEventListener('click', applyUpdate);
@@ -1433,7 +1443,7 @@ function buildLanguagePicker(container) {
   populateLanguageOptions(select);
 }
 
-function buildSettingsSection(section) {
+async function buildSettingsSection(section) {
   section.innerHTML = `
     <h1 data-i18n="nav.settings"></h1>
     <div id="language-setting"></div>
@@ -1453,7 +1463,7 @@ function buildSettingsSection(section) {
   if (languageSetting) {
     buildLanguagePicker(languageSetting);
   }
-  initVersionUI();
+  await initVersionUI();
 }
 
 const SECTION_DEFS = [
@@ -1498,7 +1508,7 @@ const SECTION_DEFS = [
   }
 ];
 
-function buildLayout() {
+async function buildLayout() {
   const navItems = byId('nav-items');
   const navItemsContainer = byId('nav-items-container');
   const navBrand = navItems ? navItems.querySelector('[data-nav-brand]') : null;
@@ -1529,7 +1539,7 @@ function buildLayout() {
   state.sections = sections.map(def => def.id);
   state.sectionMap = new Map(sections.map(def => [def.id, def]));
 
-  sections.forEach(def => {
+  for (const def of sections) {
     const link = document.createElement('a');
     link.href = `#${def.id}`;
     link.dataset.nav = def.id;
@@ -1545,9 +1555,9 @@ function buildLayout() {
     const section = document.createElement('section');
     section.id = def.id;
     section.className = 'section';
-    def.build(section);
+    await def.build(section);
     main.appendChild(section);
-  });
+  }
 
   applyTranslations(document);
 }
@@ -1636,7 +1646,7 @@ async function initApp() {
   // Step 4: Build layout
   updateLoadingStep('step-layout', 'active');
   try {
-    buildLayout();
+    await buildLayout();
     initRouter();
   } catch (error) {
     console.error('Failed to build layout:', error);
