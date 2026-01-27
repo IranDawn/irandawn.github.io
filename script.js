@@ -1454,8 +1454,8 @@ async function buildSettingsSection(section) {
         <p id="version-status" class="version-status"></p>
       </div>
       <div class="version-actions">
-        <button type="button" id="check-update-btn" class="btn btn-secondary" data-i18n="settings.version.check"></button>
-        <button type="button" id="apply-update-btn" class="btn btn-primary" hidden data-i18n="settings.version.update"></button>
+        <button type="button" id="check-update-btn" class="btn btn-secondary" onclick="checkForUpdates()" data-i18n="settings.version.check"></button>
+        <button type="button" id="apply-update-btn" class="btn btn-primary" hidden onclick="applyUpdate()" data-i18n="settings.version.update"></button>
       </div>
     </div>
   `;

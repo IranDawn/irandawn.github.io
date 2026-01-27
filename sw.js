@@ -38,8 +38,11 @@ self.addEventListener('fetch', event => {
   const { request } = event;
   const url = new URL(request.url);
 
+  console.log('[SW] Fetch:', url.pathname, 'params:', Array.from(url.searchParams.keys()));
+
   // Version check requests: always network, never cache response from this request
   if (url.pathname.endsWith('/version.json') && url.searchParams.has('check')) {
+    console.log('[SW] Version check request - using network directly');
     event.respondWith(fetch(request));
     return;
   }
